@@ -4,6 +4,7 @@ import ScanTote from './screens/ScanTote';
 import ToteDetail from './screens/ToteDetail';
 import AssignToUnit from './screens/AssignToUnit';
 import TransferToUnit from './screens/TransferToUnit';
+import AddNote from './screens/AddNote';
 import RecordUsage from './screens/RecordUsage';
 import ReturnToYard from './screens/ReturnToYard';
 import MarkEmpty from './screens/MarkEmpty';
@@ -33,6 +34,7 @@ export default function App() {
         <Route path="/tote/:id/empty" element={<MarkEmpty />} />
         <Route path="/tote/:id/discard" element={<DiscardTote />} />
         <Route path="/tote/:id/job" element={<ChangeJob />} />
+        <Route path="/tote/:id/note" element={<AddNote />} />
         <Route path="/inventory" element={<Inventory />} />
         <Route path="/units" element={<Units />} />
         <Route path="/units/:id" element={<UnitDetail />} />

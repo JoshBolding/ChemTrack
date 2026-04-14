@@ -6,7 +6,7 @@ import type { Tote, ToteStatus } from '../types';
 import { TOTE_CAPACITY_GAL } from '../types';
 import { writeEvent } from '../lib/events';
 
-type Condition = 'normal' | 'partial' | 'empty' | 'damaged';
+type Condition = 'full' | 'partial' | 'empty' | 'damaged';
 
 export default function ReturnToYard() {
   const { id = '' } = useParams();
@@ -27,10 +27,22 @@ export default function ReturnToYard() {
 
   async function save() {
     if (!tote) return;
-    const qtyNum = Math.max(0, Math.min(TOTE_CAPACITY_GAL, Number(qty) || 0));
+    // Condition drives both the saved qty and the destination status, so the
+    // button the user taps actually matches the outcome that gets persisted.
+    const rawQty = Math.max(0, Math.min(TOTE_CAPACITY_GAL, Number(qty) || 0));
+    const qtyNum =
+      condition === 'empty'
+        ? 0
+        : condition === 'full'
+          ? TOTE_CAPACITY_GAL
+          : rawQty;
+    const newStatus: ToteStatus =
+      condition === 'damaged'
+        ? 'hold'
+        : condition === 'empty' || qtyNum === 0
+          ? 'empty'
+          : 'in_yard';
     setSaving(true);
-    let newStatus: ToteStatus =
-      condition === 'damaged' ? 'hold' : qtyNum === 0 ? 'empty' : 'in_yard';
     await writeEvent({
       tote,
       type: 'returned_to_yard',
@@ -76,12 +88,18 @@ export default function ReturnToYard() {
         <div className="card p-4">
           <div className="label mb-2">Condition</div>
           <div className="grid grid-cols-2 gap-2">
-            {(['normal', 'partial', 'empty', 'damaged'] as Condition[]).map(
+            {(['full', 'partial', 'empty', 'damaged'] as Condition[]).map(
               (c) => (
                 <button
                   key={c}
                   type="button"
-                  onClick={() => setCondition(c)}
+                  onClick={() => {
+                    setCondition(c);
+                    // Snap qty to the canonical value for full/empty so the
+                    // selected condition and the saved value never disagree.
+                    if (c === 'full') setQty(String(TOTE_CAPACITY_GAL));
+                    else if (c === 'empty') setQty('0');
+                  }}
                   className={
                     condition === c
                       ? c === 'damaged'
@@ -95,6 +113,10 @@ export default function ReturnToYard() {
               )
             )}
           </div>
+          <p className="text-xs text-ink-muted mt-2">
+            Full/Empty lock the quantity automatically; Partial and Damaged let
+            you enter the returned gallons above.
+          </p>
         </div>
 
         <div className="card p-4">

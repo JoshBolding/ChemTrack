@@ -184,15 +184,207 @@ function buildTotes(): Tote[] {
   return out;
 }
 
+// Construct an event chain whose final state matches the seeded tote's
+// current status and quantity. Without this, demo history shows a "Received"
+// stamp for totes that are clearly partial, empty, or damaged — which
+// breaks the illusion the instant someone opens a tote detail page.
 function buildSeedEvents(totes: Tote[]): ToteEvent[] {
-  // Minimal event stub — one 'received' event per tote so history is non-empty.
-  return totes.map((t) => ({
+  const out: ToteEvent[] = [];
+  for (const t of totes) {
+    out.push(...lifecycleFor(t));
+  }
+  return out;
+}
+
+interface LifecycleStep {
+  type: ToteEvent['type'];
+  offsetHours: number; // relative to the tote's receivedAt anchor
+  payload?: Record<string, unknown>;
+  label?: string;
+}
+
+function lifecycleFor(t: Tote): ToteEvent[] {
+  const steps: LifecycleStep[] = [
+    {
+      type: 'received',
+      offsetHours: 0,
+      payload: { productId: t.productId, qty: 330 },
+    },
+  ];
+
+  const inUnit = t.location.kind === 'unit' && !!t.location.unitId;
+  const unitId = t.location.unitId;
+
+  switch (t.status) {
+    case 'in_yard':
+      // Partial totes back in yard got there via a usage → return cycle.
+      if (t.currentQtyGal > 0 && t.currentQtyGal < 330) {
+        steps.push(
+          {
+            type: 'assigned_to_unit',
+            offsetHours: 18,
+            payload: { unitId: 'u3', jobId: 'j1' },
+          },
+          {
+            type: 'usage_recorded',
+            offsetHours: 40,
+            payload: {
+              newQtyGal: t.currentQtyGal,
+              usedDeltaGal: 330 - t.currentQtyGal,
+              jobId: 'j1',
+              note: 'End-of-day reading',
+            },
+          },
+          {
+            type: 'returned_to_yard',
+            offsetHours: 64,
+            payload: { qtyNum: t.currentQtyGal, condition: 'partial' },
+          },
+        );
+      }
+      // Fully empty totes in yard got there via usage → empty → return.
+      if (t.currentQtyGal === 0) {
+        steps.push(
+          {
+            type: 'assigned_to_unit',
+            offsetHours: 18,
+            payload: { unitId: 'u3', jobId: 'j1' },
+          },
+          {
+            type: 'usage_recorded',
+            offsetHours: 56,
+            payload: {
+              newQtyGal: 0,
+              usedDeltaGal: 330,
+              jobId: 'j1',
+            },
+          },
+          {
+            type: 'returned_to_yard',
+            offsetHours: 72,
+            payload: { qtyNum: 0, condition: 'empty' },
+          },
+        );
+      }
+      break;
+
+    case 'assigned_to_unit':
+      if (inUnit) {
+        steps.push({
+          type: 'assigned_to_unit',
+          offsetHours: 12,
+          payload: { unitId, jobId: t.jobId ?? null },
+        });
+        // If partial, add a usage event recording how they got there.
+        if (t.currentQtyGal > 0 && t.currentQtyGal < 330) {
+          steps.push({
+            type: 'usage_recorded',
+            offsetHours: 36,
+            payload: {
+              newQtyGal: t.currentQtyGal,
+              usedDeltaGal: 330 - t.currentQtyGal,
+              jobId: t.jobId ?? null,
+              note: 'Shift end reading',
+            },
+          });
+        }
+      }
+      break;
+
+    case 'empty':
+      if (inUnit) {
+        // Emptied out on a unit, still sitting there waiting for pickup.
+        steps.push(
+          {
+            type: 'assigned_to_unit',
+            offsetHours: 12,
+            payload: { unitId, jobId: t.jobId ?? null },
+          },
+          {
+            type: 'usage_recorded',
+            offsetHours: 48,
+            payload: {
+              newQtyGal: 0,
+              usedDeltaGal: 330,
+              jobId: t.jobId ?? null,
+            },
+          },
+          {
+            type: 'marked_empty',
+            offsetHours: 49,
+            payload: { note: 'Drained completely' },
+          },
+        );
+      } else {
+        // Returned empty to the yard, then formally marked empty.
+        steps.push(
+          {
+            type: 'assigned_to_unit',
+            offsetHours: 12,
+            payload: { unitId: 'u3', jobId: 'j1' },
+          },
+          {
+            type: 'usage_recorded',
+            offsetHours: 48,
+            payload: { newQtyGal: 0, usedDeltaGal: 330, jobId: 'j1' },
+          },
+          {
+            type: 'returned_to_yard',
+            offsetHours: 56,
+            payload: { qtyNum: 0, condition: 'empty' },
+          },
+          {
+            type: 'marked_empty',
+            offsetHours: 60,
+            payload: {},
+          },
+        );
+      }
+      break;
+
+    case 'hold':
+      // Damage flagged on return (or at receiving).
+      steps.push({
+        type: 'damaged_flagged',
+        offsetHours: 2,
+        payload: { note: 'Visible cracking near cap — pulled from service' },
+      });
+      break;
+
+    case 'discarded':
+      steps.push(
+        {
+          type: 'assigned_to_unit',
+          offsetHours: 12,
+          payload: { unitId: 'u3', jobId: 'j1' },
+        },
+        {
+          type: 'usage_recorded',
+          offsetHours: 36,
+          payload: { newQtyGal: 0, usedDeltaGal: 330, jobId: 'j1' },
+        },
+        {
+          type: 'marked_empty',
+          offsetHours: 40,
+          payload: {},
+        },
+        {
+          type: 'discarded',
+          offsetHours: 48,
+          payload: { note: 'End of life — scheduled for pickup' },
+        },
+      );
+      break;
+  }
+
+  const anchor = new Date(t.receivedAt).getTime();
+  return steps.map((s) => ({
     id: uuid(),
     toteId: t.id,
-    type: 'received',
-    createdAt: t.receivedAt,
+    type: s.type,
+    createdAt: new Date(anchor + s.offsetHours * 3_600_000).toISOString(),
     createdBy: USER,
-    payload: { productId: t.productId, qty: t.currentQtyGal },
+    payload: s.payload ?? {},
     synced: true,
   }));
 }

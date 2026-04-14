@@ -172,26 +172,39 @@ export default function ToteDetail() {
             <div className="text-sm text-ink-muted">No events yet.</div>
           ) : (
             <ul className="divide-y divide-slate-100">
-              {events.map((e) => (
-                <li
-                  key={e.id}
-                  className="py-2 flex items-start justify-between gap-3"
-                >
-                  <div>
-                    <div className="text-sm font-semibold">
-                      {labelForType(e.type)}
+              {events.map((e) => {
+                const note = extractNote(e.payload);
+                const summary = summarizePayload(e);
+                return (
+                  <li key={e.id} className="py-2">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <div className="text-sm font-semibold">
+                          {labelForType(e.type)}
+                        </div>
+                        <div className="text-xs text-ink-muted">
+                          {formatTime(e.createdAt)} • {e.createdBy}
+                        </div>
+                        {summary && (
+                          <div className="text-xs text-ink-soft mt-0.5">
+                            {summary}
+                          </div>
+                        )}
+                      </div>
+                      {!e.synced && (
+                        <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 whitespace-nowrap">
+                          pending
+                        </span>
+                      )}
                     </div>
-                    <div className="text-xs text-ink-muted">
-                      {formatTime(e.createdAt)} • {e.createdBy}
-                    </div>
-                  </div>
-                  {!e.synced && (
-                    <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800">
-                      pending
-                    </span>
-                  )}
-                </li>
-              ))}
+                    {note && (
+                      <div className="mt-1.5 text-sm text-ink bg-slate-50 border border-slate-100 rounded-md px-3 py-2 whitespace-pre-wrap">
+                        {note}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>
@@ -217,4 +230,57 @@ function formatTime(iso: string): string {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+// Pull a free-text note out of an event payload. Every form writes the note
+// under the `note` key, so a single accessor covers all event types.
+function extractNote(payload: Record<string, unknown>): string | null {
+  const v = payload?.note;
+  if (typeof v !== 'string') return null;
+  const trimmed = v.trim();
+  return trimmed.length > 0 ? trimmed : null;
+}
+
+function str(p: Record<string, unknown>, k: string): string | null {
+  const v = p[k];
+  return typeof v === 'string' && v.length > 0 ? v : null;
+}
+
+function num(p: Record<string, unknown>, k: string): number | null {
+  const v = p[k];
+  return typeof v === 'number' && Number.isFinite(v) ? v : null;
+}
+
+// Lightweight one-line summary of the non-note payload fields for an event.
+// Keeps the history readable without dumping raw JSON.
+function summarizePayload(e: ToteEvent): string | null {
+  const p = e.payload ?? {};
+  switch (e.type) {
+    case 'assigned_to_unit': {
+      const unitId = str(p, 'unitId');
+      return unitId ? `→ ${unitId}` : null;
+    }
+    case 'transferred': {
+      const from = str(p, 'fromUnitId');
+      const to = str(p, 'toUnitId');
+      return from && to ? `${from} → ${to}` : null;
+    }
+    case 'usage_recorded': {
+      const delta = num(p, 'usedDeltaGal') ?? 0;
+      const newQty = num(p, 'newQtyGal') ?? 0;
+      if (delta > 0) return `−${delta} gal → ${newQty} gal remaining`;
+      return `${newQty} gal remaining`;
+    }
+    case 'returned_to_yard': {
+      const qty = num(p, 'qtyNum') ?? 0;
+      const cond = str(p, 'condition');
+      return cond ? `${cond} • ${qty} gal` : `${qty} gal`;
+    }
+    case 'job_context_changed': {
+      const jobId = str(p, 'jobId');
+      return jobId ? `→ ${jobId}` : 'cleared';
+    }
+    default:
+      return null;
+  }
 }
