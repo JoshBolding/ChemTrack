@@ -3,6 +3,7 @@ import Home from './screens/Home';
 import ScanTote from './screens/ScanTote';
 import ToteDetail from './screens/ToteDetail';
 import AssignToUnit from './screens/AssignToUnit';
+import TransferToUnit from './screens/TransferToUnit';
 import RecordUsage from './screens/RecordUsage';
 import ReturnToYard from './screens/ReturnToYard';
 import MarkEmpty from './screens/MarkEmpty';
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/tote/not-found" element={<ToteNotFound />} />
         <Route path="/tote/:id" element={<ToteDetail />} />
         <Route path="/tote/:id/assign" element={<AssignToUnit />} />
+        <Route path="/tote/:id/transfer" element={<TransferToUnit />} />
         <Route path="/tote/:id/usage" element={<RecordUsage />} />
         <Route path="/tote/:id/return" element={<ReturnToYard />} />
         <Route path="/tote/:id/empty" element={<MarkEmpty />} />

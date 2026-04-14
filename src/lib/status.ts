@@ -24,6 +24,7 @@ export function actionsForStatus(status: ToteStatus, toteId: string): ToteAction
       return [
         { id: 'usage', label: 'Record Usage', to: `${base}/usage`, tone: 'primary' },
         { id: 'job', label: 'Change Job', to: `${base}/job`, tone: 'secondary' },
+        { id: 'transfer', label: 'Transfer to Unit', to: `${base}/transfer`, tone: 'secondary' },
         { id: 'return', label: 'Return to Yard', to: `${base}/return`, tone: 'secondary' },
         { id: 'empty', label: 'Mark Empty', to: `${base}/empty`, tone: 'secondary' },
       ];
