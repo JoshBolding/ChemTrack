@@ -85,6 +85,41 @@ export async function countPendingEvents(): Promise<number> {
   return all.filter((e) => !e.synced).length;
 }
 
+export async function listPendingEvents(): Promise<ToteEvent[]> {
+  const all = await (await getDB()).getAll('events');
+  return all
+    .filter((e) => !e.synced)
+    .sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1));
+}
+
+export async function markEventSynced(
+  id: string,
+  syncError?: string,
+): Promise<void> {
+  const db = await getDB();
+  const existing = await db.get('events', id);
+  if (!existing) return;
+  const updated: ToteEvent = {
+    ...existing,
+    synced: !syncError,
+    syncError,
+  };
+  await db.put('events', updated);
+}
+
+// Count unsynced events for a specific tote. Used by the sync worker to
+// decide whether a tote should drop back to `synced` state after a push.
+export async function countPendingEventsForTote(
+  toteId: string,
+): Promise<number> {
+  const all = await (await getDB()).getAllFromIndex(
+    'events',
+    'by-tote',
+    toteId,
+  );
+  return all.filter((e) => !e.synced).length;
+}
+
 // ---------- Utilities ----------
 export async function clearAll(): Promise<void> {
   const db = await getDB();

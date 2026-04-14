@@ -3,16 +3,19 @@ import {
   appendEvent,
   clearAll,
   countPendingEvents,
+  countPendingEventsForTote,
   getJob,
   getProduct,
   getTote,
   getUnit,
   listEventsForTote,
   listJobs,
+  listPendingEvents,
   listProducts,
   listTotes,
   listTotesByStatus,
   listUnits,
+  markEventSynced,
   putJob,
   putProduct,
   putTote,
@@ -194,6 +197,61 @@ describe('events', () => {
     await appendEvent(makeEvent({ id: 'e2', synced: false }));
     await appendEvent(makeEvent({ id: 'e3', synced: false }));
     expect(await countPendingEvents()).toBe(2);
+  });
+
+  it('listPendingEvents returns only unsynced events, oldest first', async () => {
+    await appendEvent(
+      makeEvent({
+        id: 'e1',
+        synced: true,
+        createdAt: '2026-04-14T00:00:00.000Z',
+      }),
+    );
+    await appendEvent(
+      makeEvent({
+        id: 'e2',
+        synced: false,
+        createdAt: '2026-04-14T02:00:00.000Z',
+      }),
+    );
+    await appendEvent(
+      makeEvent({
+        id: 'e3',
+        synced: false,
+        createdAt: '2026-04-14T01:00:00.000Z',
+      }),
+    );
+    const pending = await listPendingEvents();
+    expect(pending.map((e) => e.id)).toEqual(['e3', 'e2']);
+  });
+
+  it('markEventSynced flips synced=true by default', async () => {
+    await appendEvent(makeEvent({ id: 'e1', synced: false }));
+    await markEventSynced('e1');
+    expect(await countPendingEvents()).toBe(0);
+  });
+
+  it('markEventSynced with an error keeps it pending and stores the error', async () => {
+    await appendEvent(makeEvent({ id: 'e1', synced: false, toteId: 'A' }));
+    await markEventSynced('e1', 'RLS denied');
+    const events = await listEventsForTote('A');
+    expect(events[0].synced).toBe(false);
+    expect(events[0].syncError).toBe('RLS denied');
+    expect(await countPendingEvents()).toBe(1);
+  });
+
+  it('markEventSynced is a no-op for unknown ids', async () => {
+    await markEventSynced('nonexistent');
+    expect(await countPendingEvents()).toBe(0);
+  });
+
+  it('countPendingEventsForTote scopes by tote id', async () => {
+    await appendEvent(makeEvent({ id: 'e1', toteId: 'A', synced: false }));
+    await appendEvent(makeEvent({ id: 'e2', toteId: 'A', synced: true }));
+    await appendEvent(makeEvent({ id: 'e3', toteId: 'B', synced: false }));
+    expect(await countPendingEventsForTote('A')).toBe(1);
+    expect(await countPendingEventsForTote('B')).toBe(1);
+    expect(await countPendingEventsForTote('C')).toBe(0);
   });
 });
 
