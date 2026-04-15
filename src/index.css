@@ -14,43 +14,191 @@ body,
 }
 
 body {
-  @apply bg-surface-alt text-ink antialiased;
+  @apply text-ink antialiased;
   font-family:
-    system-ui,
-    -apple-system,
+    Aptos,
+    'Segoe UI Variable Text',
+    'SF Pro Display',
     'Segoe UI',
-    Roboto,
-    'Helvetica Neue',
     Arial,
     sans-serif;
+  letter-spacing: -0.01em;
+  background:
+    radial-gradient(circle at top left, rgba(201, 149, 79, 0.18), transparent 24%),
+    radial-gradient(circle at top right, rgba(22, 32, 43, 0.1), transparent 24%),
+    linear-gradient(180deg, #fcfaf5 0%, #f4eee3 46%, #ece4d6 100%);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.32) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.32) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.25;
+  pointer-events: none;
+  z-index: -2;
+}
+
+#root {
+  position: relative;
+  isolation: isolate;
 }
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center min-h-[56px] px-5 rounded-2xl text-lg font-semibold select-none active:scale-[0.98] transition;
+    @apply inline-flex items-center justify-center min-h-[56px] px-5 rounded-2xl text-lg font-semibold select-none transition-all duration-300 ease-out;
+    box-shadow: 0 12px 26px rgba(22, 32, 43, 0.08);
   }
   .btn-primary {
-    @apply btn bg-primary text-white active:bg-primary-dark shadow-sm;
+    @apply btn text-white;
+    background-image: linear-gradient(135deg, #c9954f 0%, #9b6c2d 55%, #734b17 100%);
   }
   .btn-secondary {
-    @apply btn bg-white text-ink border border-slate-200 active:bg-surface-sunken;
+    @apply btn text-ink border border-white/70;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(18px);
   }
   .btn-danger {
-    @apply btn bg-red-600 text-white active:bg-red-700;
+    @apply btn text-white;
+    background-image: linear-gradient(135deg, #f26363 0%, #c53f3f 100%);
   }
   .card {
-    @apply bg-white rounded-2xl border border-slate-200 shadow-sm;
+    @apply rounded-[28px] border border-white/70;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(20px);
+    box-shadow:
+      0 20px 45px rgba(22, 32, 43, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
   }
   .label {
-    @apply text-xs font-medium uppercase tracking-wide text-ink-muted;
+    @apply text-[11px] font-semibold uppercase tracking-[0.22em] text-ink-muted;
   }
   .value {
     @apply text-base font-semibold text-ink;
   }
   .input {
-    @apply w-full min-h-[56px] px-4 rounded-2xl border border-slate-300 bg-white text-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20;
+    @apply w-full min-h-[56px] px-4 rounded-2xl border border-white/75 text-lg text-ink focus:outline-none focus:ring-2 focus:ring-primary/20;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
   }
   .select {
     @apply input appearance-none pr-10;
+  }
+  .surface-tint {
+    @apply rounded-[28px] border border-white/55;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.5));
+    backdrop-filter: blur(18px);
+  }
+  .metric-panel {
+    @apply rounded-3xl border border-white/15 px-4 py-3;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+    backdrop-filter: blur(14px);
+  }
+  .hero-panel {
+    position: relative;
+    overflow: hidden;
+    border-radius: 32px;
+    padding: 1.5rem;
+    color: white;
+    background:
+      radial-gradient(circle at 90% 20%, rgba(201, 149, 79, 0.36), transparent 22%),
+      radial-gradient(circle at 15% 15%, rgba(255, 255, 255, 0.08), transparent 20%),
+      linear-gradient(155deg, #12161c 0%, #192231 46%, #26354a 100%);
+    box-shadow: 0 28px 72px rgba(18, 22, 28, 0.24);
+  }
+  .hero-panel::after {
+    content: '';
+    position: absolute;
+    inset: auto -8% -34% 30%;
+    height: 220px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(236, 208, 159, 0.28), transparent 60%);
+    pointer-events: none;
+  }
+  .page-intro {
+    @apply text-sm text-ink-muted;
+  }
+}
+
+.btn:hover,
+.card:hover,
+.surface-tint:hover {
+  transform: translateY(-1px);
+}
+
+.hero-orbit {
+  position: absolute;
+  top: -1.5rem;
+  right: -1rem;
+  width: 10rem;
+  height: 10rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 0 0 18px rgba(255, 255, 255, 0.03),
+    0 0 0 42px rgba(255, 255, 255, 0.02);
+}
+
+.animate-rise-in {
+  opacity: 0;
+  animation: rise-in 0.72s cubic-bezier(0.2, 0.65, 0.2, 1) forwards;
+}
+
+.animate-float-soft {
+  animation: float-soft 6s ease-in-out infinite;
+}
+
+.delay-1 {
+  animation-delay: 0.08s;
+}
+
+.delay-2 {
+  animation-delay: 0.16s;
+}
+
+.delay-3 {
+  animation-delay: 0.24s;
+}
+
+.delay-4 {
+  animation-delay: 0.32s;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise-in,
+  .animate-float-soft {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .btn,
+  .card,
+  .surface-tint {
+    transition: none !important;
   }
 }

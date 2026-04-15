@@ -3,9 +3,8 @@
 //   2. Updates the denormalized tote record transactionally
 //   3. Marks the tote's sync state
 //
-// In V1, there is no real server. "synced: false" represents the offline queue,
-// which a future sync worker will drain. For the POC we mark events synced = true
-// if online, or leave pending if navigator.onLine is false.
+// In V1, there is no live backend. "synced: false" represents changes captured
+// offline and still queued locally on the device.
 
 import type { EventType, Tote, ToteEvent } from '../types';
 import { appendEvent, putTote } from '../db/repo';
@@ -83,5 +82,75 @@ export function labelForType(type: EventType): string {
       return 'Quantity corrected';
     case 'status_corrected':
       return 'Status corrected';
+  }
+}
+
+function getString(value: unknown): string | undefined {
+  return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+}
+
+function getNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+export function noteForEvent(event: ToteEvent): string | undefined {
+  return getString(event.payload.note);
+}
+
+export function summaryForEvent(event: ToteEvent): string | undefined {
+  const { payload, type } = event;
+
+  switch (type) {
+    case 'received': {
+      const qty = getNumber(payload.qty);
+      return qty !== undefined ? `${qty} gal received` : undefined;
+    }
+    case 'assigned_to_unit': {
+      const unitId = getString(payload.unitId);
+      const jobId = getString(payload.jobId);
+      if (unitId && jobId) return `${unitId} • ${jobId}`;
+      return unitId ?? jobId;
+    }
+    case 'transferred': {
+      const fromUnitId = getString(payload.fromUnitId);
+      const toUnitId = getString(payload.toUnitId);
+      if (fromUnitId && toUnitId) return `${fromUnitId} -> ${toUnitId}`;
+      return toUnitId ?? fromUnitId;
+    }
+    case 'returned_to_yard': {
+      const qtyNum = getNumber(payload.qtyNum);
+      const condition = getString(payload.condition);
+      if (qtyNum !== undefined && condition) return `${condition} • ${qtyNum} gal`;
+      if (qtyNum !== undefined) return `${qtyNum} gal`;
+      return condition;
+    }
+    case 'usage_recorded': {
+      const usedDeltaGal = getNumber(payload.usedDeltaGal);
+      const newQtyGal = getNumber(payload.newQtyGal);
+      const parts: string[] = [];
+      if (usedDeltaGal !== undefined) parts.push(`-${usedDeltaGal} gal`);
+      if (newQtyGal !== undefined) parts.push(`${newQtyGal} gal remaining`);
+      return parts.length > 0 ? parts.join(' -> ') : undefined;
+    }
+    case 'job_context_changed': {
+      const jobId = getString(payload.jobId);
+      return jobId ? `Job ${jobId}` : 'Job cleared';
+    }
+    case 'marked_empty':
+      return '0 gal remaining';
+    case 'damaged_flagged':
+      return 'Moved to hold';
+    case 'discarded':
+      return 'Removed from active inventory';
+    case 'note_added':
+      return undefined;
+    case 'qty_corrected': {
+      const newQty = getNumber(payload.newQtyGal) ?? getNumber(payload.correctedQtyGal);
+      return newQty !== undefined ? `${newQty} gal` : undefined;
+    }
+    case 'status_corrected': {
+      const status = getString(payload.status);
+      return status ? `Status ${status}` : undefined;
+    }
   }
 }

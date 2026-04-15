@@ -36,8 +36,8 @@ export default function OfflineBadge() {
   if (online && pending === 0) {
     return (
       <span
-        className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full bg-white/10"
-        title="Online and synced"
+        className="inline-flex items-center gap-1.5 rounded-full border border-emerald-300/20 bg-emerald-300/10 px-2.5 py-1 text-xs font-medium text-emerald-100"
+        title="Connected. This build stores data locally on the device."
       >
         <span className="w-2 h-2 rounded-full bg-emerald-300" />
         Online
@@ -47,18 +47,18 @@ export default function OfflineBadge() {
   if (online && pending > 0) {
     return (
       <span
-        className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full bg-yellow-400/20 text-yellow-100"
-        title={`${pending} changes pending sync`}
+        className="inline-flex items-center gap-1.5 rounded-full border border-yellow-300/20 bg-yellow-300/10 px-2.5 py-1 text-xs font-medium text-yellow-100"
+        title={`${pending} offline change${pending === 1 ? '' : 's'} saved locally and still queued`}
       >
         <span className="w-2 h-2 rounded-full bg-yellow-300" />
-        {pending} pending
+        {pending} queued
       </span>
     );
   }
   return (
     <span
-      className="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-1 rounded-full bg-red-500/30 text-red-100"
-      title="Offline — changes will sync when reconnected"
+      className="inline-flex items-center gap-1.5 rounded-full border border-red-300/20 bg-red-400/12 px-2.5 py-1 text-xs font-medium text-red-100"
+      title="Offline. Changes are still saved locally on this device."
     >
       <span className="w-2 h-2 rounded-full bg-red-300" />
       Offline

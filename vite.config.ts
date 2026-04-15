@@ -15,9 +15,9 @@ export default defineConfig({
       manifest: {
         name: 'ChemTrack',
         short_name: 'ChemTrack',
-        description: 'Red Hawk chemical tote tracking',
-        theme_color: '#b8202e',
-        background_color: '#0f172a',
+        description: 'Field chemical tote tracking for units, yards, and jobs',
+        theme_color: '#12161c',
+        background_color: '#12161c',
         display: 'standalone',
         orientation: 'portrait',
         start_url: '.',

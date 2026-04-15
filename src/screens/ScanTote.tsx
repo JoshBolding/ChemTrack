@@ -78,9 +78,18 @@ export default function ScanTote() {
   return (
     <Layout title="Scan Tote" back="/">
       <div className="space-y-4">
-        <div className="card overflow-hidden">
-          <div className="bg-black aspect-square relative">
+        <section className="surface-tint animate-rise-in px-5 py-4">
+          <div className="label">Primary Workflow</div>
+          <p className="page-intro mt-2">
+            Use the camera when possible, then fall back to manual entry if the label is dirty
+            or damaged.
+          </p>
+        </section>
+
+        <div className="card animate-rise-in delay-1 overflow-hidden">
+          <div className="relative aspect-square bg-[#10151c]">
             <div id={containerId} className="w-full h-full" />
+            <div className="pointer-events-none absolute inset-[11%] rounded-[28px] border border-white/15" />
             {!scanning && !cameraError && (
               <div className="absolute inset-0 flex items-center justify-center text-white/70 text-sm">
                 Starting camera…
@@ -105,7 +114,7 @@ export default function ScanTote() {
           </div>
         </div>
 
-        <div className="card p-4">
+        <div className="card animate-rise-in delay-2 p-4">
           <div className="label mb-2">Manual Entry</div>
           <form onSubmit={submitManual} className="flex gap-2">
             <input

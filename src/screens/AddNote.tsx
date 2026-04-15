@@ -5,26 +5,22 @@ import { getTote } from '../db/repo';
 import type { Tote } from '../types';
 import { writeEvent } from '../lib/events';
 
-// Simple note capture — writes a note_added event whose payload carries the
-// text. Surfaced as an action on in_yard, empty, and hold totes.
 export default function AddNote() {
   const { id = '' } = useParams();
   const nav = useNavigate();
   const [tote, setTote] = useState<Tote | null>(null);
-  const [text, setText] = useState('');
+  const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     void (async () => {
-      const t = await getTote(id);
-      setTote(t ?? null);
+      setTote((await getTote(id)) ?? null);
     })();
   }, [id]);
 
   async function save() {
-    if (!tote) return;
-    const trimmed = text.trim();
-    if (!trimmed) return;
+    const trimmed = note.trim();
+    if (!tote || !trimmed) return;
     setSaving(true);
     await writeEvent({
       tote,
@@ -44,35 +40,31 @@ export default function AddNote() {
     );
   }
 
-  const trimmedLen = text.trim().length;
-
   return (
     <Layout title="Add Note" back={`/tote/${encodeURIComponent(tote.id)}`}>
       <div className="space-y-4">
-        <div className="card p-4">
+        <section className="card animate-rise-in p-5">
           <div className="label">Tote</div>
-          <div className="text-lg font-bold">{tote.id}</div>
-          <div className="text-ink-soft text-sm">{tote.currentQtyGal} gal</div>
-        </div>
+          <div className="mt-1 text-lg font-black tracking-[-0.03em]">{tote.id}</div>
+          <p className="page-intro mt-2">
+            Capture field context, damage notes, or anything the next operator should see.
+          </p>
+        </section>
 
-        <div className="card p-4">
-          <label className="label block mb-2">Note</label>
+        <section className="card animate-rise-in delay-1 p-5">
+          <label className="label mb-3 block">Note</label>
           <textarea
-            className="input min-h-[140px] py-3"
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="What should the next person know?"
+            className="input min-h-[160px] py-4"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Example: Tote arrived with a torn sleeve but product level looked clean."
             autoFocus
           />
-          <p className="text-xs text-ink-muted mt-2">
-            Notes appear on the tote's history. Use them for inspection results,
-            condition observations, or handoff details.
-          </p>
-        </div>
+        </section>
 
         <button
-          className="btn-primary w-full"
-          disabled={saving || trimmedLen === 0}
+          className="btn-primary animate-rise-in delay-2 w-full"
+          disabled={!note.trim() || saving}
           onClick={save}
         >
           {saving ? 'Saving…' : 'Save Note'}

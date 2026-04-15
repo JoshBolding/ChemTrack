@@ -16,7 +16,7 @@ import {
   StatusBadge,
   SyncBadge,
 } from '../components/StatusBadge';
-import { labelForType } from '../lib/events';
+import { labelForType, noteForEvent, summaryForEvent } from '../lib/events';
 
 export default function ToteDetail() {
   const { id = '' } = useParams();
@@ -95,13 +95,12 @@ export default function ToteDetail() {
   return (
     <Layout title={tote.id} back="/scan">
       <div className="space-y-4">
-        {/* Header card */}
-        <div className="card p-4">
+        <div className="card animate-rise-in overflow-hidden p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="label">Tote</div>
-              <div className="text-xl font-bold">{tote.id}</div>
-              <div className="text-ink-soft mt-0.5">
+              <div className="text-2xl font-black tracking-[-0.03em]">{tote.id}</div>
+              <div className="mt-0.5 text-ink-soft">
                 {product?.name ?? tote.productId}
               </div>
             </div>
@@ -116,15 +115,14 @@ export default function ToteDetail() {
               </div>
             </div>
           </div>
-          <div className="mt-3 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             <StatusBadge status={tote.status} />
             <PartialBadge tote={tote} />
             <SyncBadge state={tote.syncState} />
           </div>
         </div>
 
-        {/* Details card */}
-        <div className="card p-4 space-y-3">
+        <div className="card animate-rise-in delay-1 p-5 space-y-3">
           <Row label="Location" value={locationLabel} />
           {unit?.region && <Row label="Region" value={unit.region} />}
           <Row label="Job" value={job?.name ?? '—'} />
@@ -141,9 +139,8 @@ export default function ToteDetail() {
           />
         </div>
 
-        {/* Actions */}
         {actions.length > 0 && (
-          <div className="card p-4">
+          <div className="card animate-rise-in delay-2 p-5">
             <div className="label mb-3">Actions</div>
             <div className="grid gap-2">
               {actions.map((a) => (
@@ -165,40 +162,46 @@ export default function ToteDetail() {
           </div>
         )}
 
-        {/* Event history */}
-        <div className="card p-4">
+        <div className="card animate-rise-in delay-3 p-5">
           <div className="label mb-3">History</div>
           {events.length === 0 ? (
             <div className="text-sm text-ink-muted">No events yet.</div>
           ) : (
-            <ul className="divide-y divide-slate-100">
+            <ul className="divide-y divide-slate-100/70">
               {events.map((e) => {
-                const note = extractNote(e.payload);
-                const summary = summarizePayload(e);
+                const summary = summaryForEvent(e);
+                const note = noteForEvent(e);
+
                 return (
-                  <li key={e.id} className="py-2">
+                  <li
+                    key={e.id}
+                    className="py-3"
+                  >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="text-sm font-semibold">
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-semibold text-ink">
                           {labelForType(e.type)}
                         </div>
-                        <div className="text-xs text-ink-muted">
-                          {formatTime(e.createdAt)} • {e.createdBy}
+                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
+                          <span>{formatTime(e.createdAt)}</span>
+                          <span>•</span>
+                          <span>{e.createdBy}</span>
+                          {summary && (
+                            <>
+                              <span>•</span>
+                              <span className="font-medium text-ink-soft">{summary}</span>
+                            </>
+                          )}
                         </div>
-                        {summary && (
-                          <div className="text-xs text-ink-soft mt-0.5">
-                            {summary}
-                          </div>
-                        )}
                       </div>
                       {!e.synced && (
-                        <span className="text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 whitespace-nowrap">
-                          pending
+                        <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-yellow-800">
+                          queued
                         </span>
                       )}
                     </div>
                     {note && (
-                      <div className="mt-1.5 text-sm text-ink bg-slate-50 border border-slate-100 rounded-md px-3 py-2 whitespace-pre-wrap">
+                      <div className="mt-3 rounded-2xl border border-amber-100 bg-amber-50/80 px-3 py-2 text-sm text-amber-950">
                         {note}
                       </div>
                     )}
@@ -230,57 +233,4 @@ function formatTime(iso: string): string {
     hour: 'numeric',
     minute: '2-digit',
   });
-}
-
-// Pull a free-text note out of an event payload. Every form writes the note
-// under the `note` key, so a single accessor covers all event types.
-function extractNote(payload: Record<string, unknown>): string | null {
-  const v = payload?.note;
-  if (typeof v !== 'string') return null;
-  const trimmed = v.trim();
-  return trimmed.length > 0 ? trimmed : null;
-}
-
-function str(p: Record<string, unknown>, k: string): string | null {
-  const v = p[k];
-  return typeof v === 'string' && v.length > 0 ? v : null;
-}
-
-function num(p: Record<string, unknown>, k: string): number | null {
-  const v = p[k];
-  return typeof v === 'number' && Number.isFinite(v) ? v : null;
-}
-
-// Lightweight one-line summary of the non-note payload fields for an event.
-// Keeps the history readable without dumping raw JSON.
-function summarizePayload(e: ToteEvent): string | null {
-  const p = e.payload ?? {};
-  switch (e.type) {
-    case 'assigned_to_unit': {
-      const unitId = str(p, 'unitId');
-      return unitId ? `→ ${unitId}` : null;
-    }
-    case 'transferred': {
-      const from = str(p, 'fromUnitId');
-      const to = str(p, 'toUnitId');
-      return from && to ? `${from} → ${to}` : null;
-    }
-    case 'usage_recorded': {
-      const delta = num(p, 'usedDeltaGal') ?? 0;
-      const newQty = num(p, 'newQtyGal') ?? 0;
-      if (delta > 0) return `−${delta} gal → ${newQty} gal remaining`;
-      return `${newQty} gal remaining`;
-    }
-    case 'returned_to_yard': {
-      const qty = num(p, 'qtyNum') ?? 0;
-      const cond = str(p, 'condition');
-      return cond ? `${cond} • ${qty} gal` : `${qty} gal`;
-    }
-    case 'job_context_changed': {
-      const jobId = str(p, 'jobId');
-      return jobId ? `→ ${jobId}` : 'cleared';
-    }
-    default:
-      return null;
-  }
 }

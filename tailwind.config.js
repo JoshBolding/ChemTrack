@@ -4,29 +4,26 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Red Hawk–ish palette
         primary: {
-          DEFAULT: '#b8202e',
-          dark: '#8a1822',
-          light: '#d94652',
+          DEFAULT: '#9b6c2d',
+          dark: '#734b17',
+          light: '#c9954f',
         },
         ink: {
-          DEFAULT: '#0f172a',
-          soft: '#334155',
-          muted: '#64748b',
+          DEFAULT: '#16202b',
+          soft: '#314052',
+          muted: '#667487',
         },
         surface: {
           DEFAULT: '#ffffff',
-          alt: '#f8fafc',
-          sunken: '#f1f5f9',
+          alt: '#f7f2e9',
+          sunken: '#ede5d7',
         },
       },
       spacing: {
-        // Ensure minimum tap target of 56px
-        tap: '3.5rem', // 56px
+        tap: '3.5rem',
       },
       fontSize: {
-        // Larger by default for field readability
         base: ['1.0625rem', { lineHeight: '1.5rem' }],
       },
     },
