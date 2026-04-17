@@ -13,7 +13,7 @@ const toneForStatus: Record<ToteStatus, string> = {
 export function StatusBadge({ status }: { status: ToteStatus }) {
   return (
     <span
-      className={`inline-flex items-center text-xs font-semibold px-2.5 py-1 rounded-full border ${toneForStatus[status]}`}
+      className={`inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded border ${toneForStatus[status]}`}
     >
       {TOTE_STATUS_LABELS[status]}
     </span>
@@ -23,7 +23,7 @@ export function StatusBadge({ status }: { status: ToteStatus }) {
 export function PartialBadge({ tote }: { tote: Tote }) {
   if (!isPartial(tote)) return null;
   return (
-    <span className="inline-flex items-center text-xs font-semibold px-2 py-1 rounded-full border bg-yellow-50 text-yellow-800 border-yellow-200">
+    <span className="inline-flex items-center text-[11px] font-semibold px-2 py-0.5 rounded border bg-yellow-50 text-yellow-800 border-yellow-200">
       Partial
     </span>
   );
@@ -44,7 +44,7 @@ const syncLabel: Record<Tote['syncState'], string> = {
 export function SyncBadge({ state }: { state: Tote['syncState'] }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-full border ${syncTone[state]}`}
+      className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2 py-0.5 rounded border ${syncTone[state]}`}
     >
       <span
         className={`w-1.5 h-1.5 rounded-full ${

@@ -5,26 +5,27 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#9b6c2d',
-          dark: '#734b17',
-          light: '#c9954f',
+          DEFAULT: '#b8202e',
+          dark: '#8a1822',
+          light: '#d94652',
         },
         ink: {
-          DEFAULT: '#16202b',
-          soft: '#314052',
-          muted: '#667487',
+          DEFAULT: '#0f172a',
+          soft: '#334155',
+          muted: '#64748b',
         },
         surface: {
           DEFAULT: '#ffffff',
-          alt: '#f7f2e9',
-          sunken: '#ede5d7',
+          alt: '#f8fafc',
+          sunken: '#f1f5f9',
         },
       },
       spacing: {
         tap: '3.5rem',
       },
-      fontSize: {
-        base: ['1.0625rem', { lineHeight: '1.5rem' }],
+      borderRadius: {
+        lg: '0.5rem',
+        md: '0.375rem',
       },
     },
   },

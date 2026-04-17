@@ -63,18 +63,21 @@ export default function ToteDetail() {
   if (loading) {
     return (
       <Layout title="Loading…" back="/scan">
-        <div className="text-ink-muted text-center mt-10">Loading tote…</div>
+        <div className="text-ink-muted text-center text-sm mt-8">
+          Loading tote…
+        </div>
       </Layout>
     );
   }
 
   if (!tote) {
     return (
-      <Layout title="Tote not found" back="/scan">
-        <div className="card p-6 text-center">
-          <div className="text-lg font-semibold mb-2">Tote not found</div>
-          <div className="text-sm text-ink-muted mb-4">
-            ID <code>{id}</code> doesn't exist in the local snapshot.
+      <Layout title="Not found" back="/scan">
+        <div className="card p-4 text-center">
+          <div className="text-sm font-semibold mb-1">Tote not found</div>
+          <div className="text-xs text-ink-muted mb-3">
+            ID <code className="bg-surface-sunken px-1 rounded">{id}</code>{' '}
+            doesn't exist locally.
           </div>
           <Link to="/scan" className="btn-primary inline-flex">
             Back to Scan
@@ -89,139 +92,165 @@ export default function ToteDetail() {
     tote.location.kind === 'yard'
       ? 'Yard'
       : tote.location.kind === 'hold'
-        ? 'Hold / Inspection'
+        ? 'Hold'
         : unit?.name ?? 'Unit';
+
+  const pct = Math.min(
+    100,
+    (tote.currentQtyGal / TOTE_CAPACITY_GAL) * 100
+  );
 
   return (
     <Layout title={tote.id} back="/scan">
-      <div className="space-y-4">
-        <div className="card animate-rise-in overflow-hidden p-5">
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <div className="label">Tote</div>
-              <div className="text-2xl font-black tracking-[-0.03em]">{tote.id}</div>
-              <div className="mt-0.5 text-ink-soft">
+      <div className="space-y-3">
+        {/* Info */}
+        <div className="card p-3">
+          <div className="flex items-start justify-between gap-2">
+            <div className="min-w-0">
+              <div className="text-sm font-semibold truncate">
                 {product?.name ?? tote.productId}
               </div>
-            </div>
-            <div className="text-right">
-              <div className="label">Current Qty</div>
-              <div className="text-2xl font-extrabold text-primary">
-                {tote.currentQtyGal}
-                <span className="text-sm font-semibold text-ink-muted">
-                  {' '}
-                  / {TOTE_CAPACITY_GAL} gal
-                </span>
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                <StatusBadge status={tote.status} />
+                <PartialBadge tote={tote} />
+                <SyncBadge state={tote.syncState} />
               </div>
             </div>
-          </div>
-          <div className="mt-4 flex flex-wrap gap-2">
-            <StatusBadge status={tote.status} />
-            <PartialBadge tote={tote} />
-            <SyncBadge state={tote.syncState} />
-          </div>
-        </div>
-
-        <div className="card animate-rise-in delay-1 p-5 space-y-3">
-          <Row label="Location" value={locationLabel} />
-          {unit?.region && <Row label="Region" value={unit.region} />}
-          <Row label="Job" value={job?.name ?? '—'} />
-          <Row
-            label="Last Update"
-            value={
-              <>
-                {tote.updatedLabel ?? 'Updated'} • {formatTime(tote.updatedAt)}
-                <div className="text-xs text-ink-muted font-normal">
-                  by {tote.updatedBy}
-                </div>
-              </>
-            }
-          />
-        </div>
-
-        {actions.length > 0 && (
-          <div className="card animate-rise-in delay-2 p-5">
-            <div className="label mb-3">Actions</div>
-            <div className="grid gap-2">
-              {actions.map((a) => (
-                <Link
-                  key={a.id}
-                  to={a.to}
-                  className={
-                    a.tone === 'danger'
-                      ? 'btn-danger'
-                      : a.tone === 'primary'
-                        ? 'btn-primary'
-                        : 'btn-secondary'
-                  }
-                >
-                  {a.label}
-                </Link>
-              ))}
+            <div className="text-right shrink-0">
+              <div className="text-lg font-bold tabular-nums leading-tight">
+                {tote.currentQtyGal}
+                <span className="text-xs text-ink-muted font-normal">
+                  {' '}
+                  / {TOTE_CAPACITY_GAL}
+                </span>
+              </div>
+              <div className="text-[11px] text-ink-muted">gallons</div>
             </div>
+          </div>
+
+          <div className="mt-2 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+            <div
+              className={`h-full rounded-full ${
+                pct === 0
+                  ? 'bg-slate-300'
+                  : pct < 30
+                    ? 'bg-amber-400'
+                    : 'bg-emerald-500'
+              }`}
+              style={{ width: `${pct}%` }}
+            />
+          </div>
+
+          <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+            <div>
+              <span className="text-ink-muted">Location </span>
+              <span className="font-medium">{locationLabel}</span>
+            </div>
+            <div>
+              <span className="text-ink-muted">Job </span>
+              <span className="font-medium">{job?.name ?? '—'}</span>
+            </div>
+            {unit?.region && (
+              <div>
+                <span className="text-ink-muted">Region </span>
+                <span className="font-medium">{unit.region}</span>
+              </div>
+            )}
+            <div className="col-span-2 mt-0.5">
+              <span className="text-ink-muted">
+                {tote.updatedLabel ?? 'Updated'}{' '}
+              </span>
+              <span className="font-medium">{formatTime(tote.updatedAt)}</span>
+              <span className="text-ink-muted"> by {tote.updatedBy}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        {actions.length > 0 && (
+          <div className="space-y-2">
+            <Link
+              to={actions[0].to}
+              className={`w-full ${
+                actions[0].tone === 'danger'
+                  ? 'btn-danger'
+                  : actions[0].tone === 'primary'
+                    ? 'btn-primary'
+                    : 'btn-secondary'
+              }`}
+            >
+              {actions[0].label}
+            </Link>
+            {actions.length > 1 && (
+              <div className="flex flex-wrap gap-1.5">
+                {actions.slice(1).map((a) => (
+                  <Link
+                    key={a.id}
+                    to={a.to}
+                    className={`inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition active:scale-[0.98] ${
+                      a.tone === 'danger'
+                        ? 'bg-red-50 text-red-700 border border-red-200 active:bg-red-100'
+                        : 'bg-white text-ink border border-slate-200 active:bg-surface-sunken'
+                    }`}
+                  >
+                    {a.label}
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
-        <div className="card animate-rise-in delay-3 p-5">
-          <div className="label mb-3">History</div>
+        {/* History */}
+        <div className="card">
+          <div className="px-3 pt-2.5 pb-1">
+            <span className="label">History</span>
+          </div>
           {events.length === 0 ? (
-            <div className="text-sm text-ink-muted">No events yet.</div>
+            <div className="px-3 py-4 text-xs text-ink-muted">
+              No events yet.
+            </div>
           ) : (
-            <ul className="divide-y divide-slate-100/70">
+            <div className="divide-y divide-slate-100">
               {events.map((e) => {
-                const summary = summaryForEvent(e);
                 const note = noteForEvent(e);
-
+                const summary = summaryForEvent(e);
                 return (
-                  <li
-                    key={e.id}
-                    className="py-3"
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-semibold text-ink">
+                  <div key={e.id} className="px-3 py-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <span className="text-sm font-medium">
                           {labelForType(e.type)}
-                        </div>
-                        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-muted">
-                          <span>{formatTime(e.createdAt)}</span>
-                          <span>•</span>
-                          <span>{e.createdBy}</span>
-                          {summary && (
-                            <>
-                              <span>•</span>
-                              <span className="font-medium text-ink-soft">{summary}</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                      {!e.synced && (
-                        <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-yellow-800">
-                          queued
                         </span>
-                      )}
+                        {summary && (
+                          <span className="text-xs text-ink-muted ml-1.5">
+                            {summary}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-ink-muted whitespace-nowrap shrink-0 flex items-center gap-1">
+                        {!e.synced && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-yellow-400" />
+                        )}
+                        {formatTime(e.createdAt)}
+                      </div>
+                    </div>
+                    <div className="text-[11px] text-ink-muted">
+                      {e.createdBy}
                     </div>
                     {note && (
-                      <div className="mt-3 rounded-2xl border border-amber-100 bg-amber-50/80 px-3 py-2 text-sm text-amber-950">
+                      <div className="mt-1 text-xs text-ink bg-surface-sunken rounded px-2 py-1">
                         {note}
                       </div>
                     )}
-                  </li>
+                  </div>
                 );
               })}
-            </ul>
+            </div>
           )}
         </div>
       </div>
     </Layout>
-  );
-}
-
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex items-start justify-between gap-3">
-      <div className="label pt-0.5">{label}</div>
-      <div className="value text-right flex-1">{value}</div>
-    </div>
   );
 }
 
