@@ -82,6 +82,7 @@ export default function Inventory() {
                 <Link
                   key={t.id}
                   to={`/tote/${encodeURIComponent(t.id)}`}
+                  state={{ from: '/inventory' }}
                   className="text-[11px] font-mono px-1.5 py-0.5 rounded bg-surface-sunken active:bg-slate-200"
                 >
                   {t.id}

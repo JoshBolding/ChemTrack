@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote } from '../db/repo';
 import type { Tote } from '../types';
@@ -8,6 +8,7 @@ import { writeEvent } from '../lib/events';
 export default function DiscardTote() {
   const { id = '' } = useParams();
   const nav = useNavigate();
+  const state = useLocation().state;
   const [tote, setTote] = useState<Tote | null>(null);
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
@@ -27,13 +28,13 @@ export default function DiscardTote() {
       toteUpdates: { status: 'discarded' },
       updatedLabel: 'Discarded',
     });
-    nav(`/tote/${encodeURIComponent(tote.id)}`);
+    nav(`/tote/${encodeURIComponent(tote.id)}`, { state });
   }
 
-  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`}><div /></Layout>;
+  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`} backState={state}><div /></Layout>;
 
   return (
-    <Layout title="Discard Tote" back={`/tote/${encodeURIComponent(tote.id)}`}>
+    <Layout title="Discard Tote" back={`/tote/${encodeURIComponent(tote.id)}`} backState={state}>
       <div className="space-y-3">
         <div className="card p-3 border-red-200 bg-red-50">
           <div className="text-xs text-red-800">

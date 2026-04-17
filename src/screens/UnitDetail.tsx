@@ -85,6 +85,7 @@ export default function UnitDetail() {
               <li key={t.id}>
                 <Link
                   to={`/tote/${encodeURIComponent(t.id)}`}
+                  state={{ from: `/units/${encodeURIComponent(id)}` }}
                   className="px-3 py-2 flex items-center justify-between gap-2 active:bg-surface-sunken"
                 >
                   <div>

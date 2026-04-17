@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote, listJobs, listUnits } from '../db/repo';
 import type { Job, Tote, Unit } from '../types';
@@ -8,6 +8,7 @@ import { writeEvent } from '../lib/events';
 export default function AssignToUnit() {
   const { id = '' } = useParams();
   const nav = useNavigate();
+  const state = useLocation().state;
   const [tote, setTote] = useState<Tote | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -44,13 +45,13 @@ export default function AssignToUnit() {
       },
       updatedLabel: 'Assigned to unit',
     });
-    nav(`/tote/${encodeURIComponent(tote.id)}`);
+    nav(`/tote/${encodeURIComponent(tote.id)}`, { state });
   }
 
-  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`}><div /></Layout>;
+  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`} backState={state}><div /></Layout>;
 
   return (
-    <Layout title="Assign to Unit" back={`/tote/${encodeURIComponent(tote.id)}`}>
+    <Layout title="Assign to Unit" back={`/tote/${encodeURIComponent(tote.id)}`} backState={state}>
       <div className="space-y-3">
         <div className="card p-3">
           <div className="label">Tote</div>

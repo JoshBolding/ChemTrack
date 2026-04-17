@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import {
   getJob,
@@ -20,6 +20,8 @@ import { labelForType, noteForEvent, summaryForEvent } from '../lib/events';
 
 export default function ToteDetail() {
   const { id = '' } = useParams();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from ?? '/scan';
   const [tote, setTote] = useState<Tote | null>(null);
   const [product, setProduct] = useState<Product | null>(null);
   const [unit, setUnit] = useState<Unit | null>(null);
@@ -62,7 +64,7 @@ export default function ToteDetail() {
 
   if (loading) {
     return (
-      <Layout title="Loading…" back="/scan">
+      <Layout title="Loading…" back={from}>
         <div className="text-ink-muted text-center text-sm mt-8">
           Loading tote…
         </div>
@@ -72,7 +74,7 @@ export default function ToteDetail() {
 
   if (!tote) {
     return (
-      <Layout title="Not found" back="/scan">
+      <Layout title="Not found" back={from}>
         <div className="card p-4 text-center">
           <div className="text-sm font-semibold mb-1">Tote not found</div>
           <div className="text-xs text-ink-muted mb-3">
@@ -101,7 +103,7 @@ export default function ToteDetail() {
   );
 
   return (
-    <Layout title={tote.id} back="/scan">
+    <Layout title={tote.id} back={from}>
       <div className="space-y-3">
         {/* Info */}
         <div className="card p-3">
@@ -171,6 +173,7 @@ export default function ToteDetail() {
           <div className="space-y-2">
             <Link
               to={actions[0].to}
+              state={{ from }}
               className={`w-full ${
                 actions[0].tone === 'danger'
                   ? 'btn-danger'
@@ -187,6 +190,7 @@ export default function ToteDetail() {
                   <Link
                     key={a.id}
                     to={a.to}
+                    state={{ from }}
                     className={`inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition active:scale-[0.98] ${
                       a.tone === 'danger'
                         ? 'bg-red-50 text-red-700 border border-red-200 active:bg-red-100'

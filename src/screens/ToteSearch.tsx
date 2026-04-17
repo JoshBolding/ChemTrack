@@ -54,6 +54,7 @@ export default function ToteSearch() {
               <li key={t.id}>
                 <Link
                   to={`/tote/${encodeURIComponent(t.id)}`}
+                  state={{ from: '/search' }}
                   className="flex items-center justify-between gap-2 px-3 py-2 active:bg-surface-sunken"
                 >
                   <div className="min-w-0">

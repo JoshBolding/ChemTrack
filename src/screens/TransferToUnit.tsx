@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote, getUnit, listUnits } from '../db/repo';
 import type { Tote, Unit } from '../types';
@@ -8,6 +8,7 @@ import { writeEvent } from '../lib/events';
 export default function TransferToUnit() {
   const { id = '' } = useParams();
   const nav = useNavigate();
+  const state = useLocation().state;
   const [tote, setTote] = useState<Tote | null>(null);
   const [fromUnit, setFromUnit] = useState<Unit | null>(null);
   const [units, setUnits] = useState<Unit[]>([]);
@@ -46,13 +47,13 @@ export default function TransferToUnit() {
       toteUpdates: { location: { kind: 'unit', unitId: toUnitId } },
       updatedLabel: 'Transferred',
     });
-    nav(`/tote/${encodeURIComponent(tote.id)}`);
+    nav(`/tote/${encodeURIComponent(tote.id)}`, { state });
   }
 
-  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`}><div /></Layout>;
+  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`} backState={state}><div /></Layout>;
   if (loadError) {
     return (
-      <Layout title="Transfer" back={`/tote/${encodeURIComponent(tote.id)}`}>
+      <Layout title="Transfer" back={`/tote/${encodeURIComponent(tote.id)}`} backState={state}>
         <div className="card p-3 text-sm text-ink-muted">{loadError}</div>
       </Layout>
     );
@@ -61,7 +62,7 @@ export default function TransferToUnit() {
   const destinations = units.filter((u) => u.id !== tote.location.unitId);
 
   return (
-    <Layout title="Transfer to Unit" back={`/tote/${encodeURIComponent(tote.id)}`}>
+    <Layout title="Transfer to Unit" back={`/tote/${encodeURIComponent(tote.id)}`} backState={state}>
       <div className="space-y-3">
         <div className="card p-3">
           <div className="label">Tote</div>

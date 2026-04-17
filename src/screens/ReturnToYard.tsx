@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote } from '../db/repo';
 import type { Tote, ToteStatus } from '../types';
@@ -11,6 +11,7 @@ type Condition = 'full' | 'partial' | 'empty' | 'damaged';
 export default function ReturnToYard() {
   const { id = '' } = useParams();
   const nav = useNavigate();
+  const state = useLocation().state;
   const [tote, setTote] = useState<Tote | null>(null);
   const [qty, setQty] = useState('0');
   const [condition, setCondition] = useState<Condition>('partial');
@@ -63,13 +64,13 @@ export default function ReturnToYard() {
       },
       updatedLabel: 'Returned to yard',
     });
-    nav(`/tote/${encodeURIComponent(tote.id)}`);
+    nav(`/tote/${encodeURIComponent(tote.id)}`, { state });
   }
 
-  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`}><div /></Layout>;
+  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`} backState={state}><div /></Layout>;
 
   return (
-    <Layout title="Return to Yard" back={`/tote/${encodeURIComponent(tote.id)}`}>
+    <Layout title="Return to Yard" back={`/tote/${encodeURIComponent(tote.id)}`} backState={state}>
       <div className="space-y-3">
         <div className="card p-3">
           <div className="label">Tote</div>

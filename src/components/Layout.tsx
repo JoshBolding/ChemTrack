@@ -6,11 +6,12 @@ import OfflineBadge from './OfflineBadge';
 interface LayoutProps {
   title: string;
   back?: string;
+  backState?: unknown;
   children: ReactNode;
   rightSlot?: ReactNode;
 }
 
-export default function Layout({ title, back, children, rightSlot }: LayoutProps) {
+export default function Layout({ title, back, backState, children, rightSlot }: LayoutProps) {
   return (
     <div className="min-h-full flex flex-col">
       <header className="sticky top-0 z-10 bg-primary text-white px-4 py-2">
@@ -18,6 +19,7 @@ export default function Layout({ title, back, children, rightSlot }: LayoutProps
           {back ? (
             <Link
               to={back}
+              state={backState}
               className="min-h-[36px] min-w-[36px] flex items-center justify-center rounded-md active:bg-white/10"
               aria-label="Back"
             >

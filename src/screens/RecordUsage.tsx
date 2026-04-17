@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote, getUnit, listJobs } from '../db/repo';
 import type { Job, Tote, Unit } from '../types';
@@ -11,6 +11,7 @@ type Mode = 'remaining' | 'used';
 export default function RecordUsage() {
   const { id = '' } = useParams();
   const nav = useNavigate();
+  const state = useLocation().state;
   const [tote, setTote] = useState<Tote | null>(null);
   const [unit, setUnit] = useState<Unit | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -69,13 +70,13 @@ export default function RecordUsage() {
       },
       updatedLabel: 'Usage recorded',
     });
-    nav(`/tote/${encodeURIComponent(tote.id)}`);
+    nav(`/tote/${encodeURIComponent(tote.id)}`, { state });
   }
 
-  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`}><div /></Layout>;
+  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`} backState={state}><div /></Layout>;
 
   return (
-    <Layout title="Record Usage" back={`/tote/${encodeURIComponent(tote.id)}`}>
+    <Layout title="Record Usage" back={`/tote/${encodeURIComponent(tote.id)}`} backState={state}>
       <div className="space-y-3">
         <div className="card p-3">
           <div className="label">Tote</div>
