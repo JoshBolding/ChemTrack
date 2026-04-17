@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { actionsForStatus, isFull, isPartial } from './status';
 import type { Tote } from '../types';
-import { TOTE_CAPACITY_GAL } from '../types';
+import { DEFAULT_TOTE_CAPACITY_GAL } from '../types';
+
+const TOTE_CAPACITY_GAL = DEFAULT_TOTE_CAPACITY_GAL;
 
 function makeTote(overrides: Partial<Tote> = {}): Tote {
   return {
@@ -9,6 +11,7 @@ function makeTote(overrides: Partial<Tote> = {}): Tote {
     productId: 'prod-a',
     status: 'in_yard',
     location: { kind: 'yard' },
+    capacityGal: TOTE_CAPACITY_GAL,
     currentQtyGal: TOTE_CAPACITY_GAL,
     receivedAt: '2026-04-14T00:00:00.000Z',
     createdBy: 'test',

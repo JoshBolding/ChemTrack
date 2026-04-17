@@ -3,7 +3,6 @@
 // action buttons on the Tote Detail screen.
 
 import type { Tote, ToteStatus } from '../types';
-import { TOTE_CAPACITY_GAL } from '../types';
 
 export interface ToteAction {
   id: string;
@@ -43,9 +42,9 @@ export function actionsForStatus(status: ToteStatus, toteId: string): ToteAction
 }
 
 export function isPartial(t: Tote): boolean {
-  return t.currentQtyGal > 0 && t.currentQtyGal < TOTE_CAPACITY_GAL;
+  return t.currentQtyGal > 0 && t.currentQtyGal < t.capacityGal;
 }
 
 export function isFull(t: Tote): boolean {
-  return t.currentQtyGal >= TOTE_CAPACITY_GAL;
+  return t.currentQtyGal >= t.capacityGal;
 }

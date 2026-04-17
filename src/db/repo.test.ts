@@ -24,7 +24,13 @@ import {
 import type { Job, Product, Tote, ToteEvent, Unit } from '../types';
 
 function makeProduct(over: Partial<Product> = {}): Product {
-  return { id: 'prod-a', name: 'Product A', ...over };
+  return {
+    id: 'prod-a',
+    name: 'Product A',
+    densityLbPerGal: 9.0,
+    defaultToteCapacityGal: 330,
+    ...over,
+  };
 }
 
 function makeUnit(over: Partial<Unit> = {}): Unit {
@@ -47,6 +53,7 @@ function makeTote(over: Partial<Tote> = {}): Tote {
     productId: 'prod-a',
     status: 'in_yard',
     location: { kind: 'yard' },
+    capacityGal: 330,
     currentQtyGal: 330,
     receivedAt: '2026-04-14T00:00:00.000Z',
     createdBy: 'test',

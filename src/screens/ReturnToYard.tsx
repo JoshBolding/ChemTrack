@@ -3,7 +3,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote } from '../db/repo';
 import type { Tote, ToteStatus } from '../types';
-import { TOTE_CAPACITY_GAL } from '../types';
 import { writeEvent } from '../lib/events';
 
 type Condition = 'full' | 'partial' | 'empty' | 'damaged';
@@ -26,7 +25,7 @@ export default function ReturnToYard() {
         setQty(String(t.currentQtyGal));
         setCondition(
           t.currentQtyGal === 0 ? 'empty'
-            : t.currentQtyGal >= TOTE_CAPACITY_GAL ? 'full'
+            : t.currentQtyGal >= t.capacityGal ? 'full'
               : 'partial'
         );
       }
@@ -35,17 +34,20 @@ export default function ReturnToYard() {
 
   function selectCondition(next: Condition) {
     setCondition(next);
-    if (next === 'full') setQty(String(TOTE_CAPACITY_GAL));
+    if (!tote) return;
+    const cap = tote.capacityGal;
+    if (next === 'full') setQty(String(cap));
     else if (next === 'empty') setQty('0');
-    else if (tote) setQty(String(Math.min(TOTE_CAPACITY_GAL, Math.max(0, tote.currentQtyGal))));
+    else setQty(String(Math.min(cap, Math.max(0, tote.currentQtyGal))));
   }
 
   async function save() {
     if (!tote) return;
+    const cap = tote.capacityGal;
     const qtyNum =
-      condition === 'full' ? TOTE_CAPACITY_GAL
+      condition === 'full' ? cap
         : condition === 'empty' ? 0
-          : Math.max(0, Math.min(TOTE_CAPACITY_GAL, Number(qty) || 0));
+          : Math.max(0, Math.min(cap, Number(qty) || 0));
     setSaving(true);
     const newStatus: ToteStatus =
       condition === 'damaged' ? 'hold'
@@ -108,7 +110,7 @@ export default function ReturnToYard() {
             type="number"
             inputMode="numeric"
             min={0}
-            max={TOTE_CAPACITY_GAL}
+            max={tote.capacityGal}
             value={qty}
             onChange={(e) => setQty(e.target.value)}
             disabled={condition === 'full' || condition === 'empty'}
@@ -118,7 +120,7 @@ export default function ReturnToYard() {
             <span className="font-semibold text-ink">
               {condition === 'damaged' ? 'Hold' : condition === 'empty' ? 'Empty' : 'In Yard'}
             </span>{' '}
-            with {condition === 'full' ? TOTE_CAPACITY_GAL : condition === 'empty' ? 0 : qty || 0} gal.
+            with {condition === 'full' ? tote.capacityGal : condition === 'empty' ? 0 : qty || 0} gal.
           </p>
         </div>
 

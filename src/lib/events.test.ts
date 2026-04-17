@@ -14,6 +14,7 @@ function makeTote(over: Partial<Tote> = {}): Tote {
     productId: 'prod-a',
     status: 'in_yard',
     location: { kind: 'yard' },
+    capacityGal: 330,
     currentQtyGal: 330,
     receivedAt: '2026-04-14T00:00:00.000Z',
     createdBy: 'jacob',

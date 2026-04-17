@@ -3,7 +3,6 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote, getUnit, listJobs } from '../db/repo';
 import type { Job, Tote, Unit } from '../types';
-import { TOTE_CAPACITY_GAL } from '../types';
 import { writeEvent } from '../lib/events';
 
 type Mode = 'remaining' | 'used';
@@ -49,7 +48,7 @@ export default function RecordUsage() {
 
   async function save() {
     if (!tote) return;
-    if (newQty < 0 || newQty > TOTE_CAPACITY_GAL) return;
+    if (newQty < 0 || newQty > tote.capacityGal) return;
     setSaving(true);
     const markEmpty = newQty === 0;
     await writeEvent({
@@ -113,7 +112,7 @@ export default function RecordUsage() {
             type="number"
             inputMode="numeric"
             min={0}
-            max={TOTE_CAPACITY_GAL}
+            max={tote.capacityGal}
             value={value}
             onChange={(e) => setValue(e.target.value)}
           />

@@ -1,8 +1,10 @@
-// ChemTrack V1 data model
+// ChemTrack V2 data model
 // Statuses, locations, and job context are kept strictly separate —
 // each field carries one meaning only.
 
-export const TOTE_CAPACITY_GAL = 330;
+// Default capacity used for new product templates and seed fallback.
+// Per-tote capacity is now stored on the Tote itself (totes can be 250, 275, 330, etc).
+export const DEFAULT_TOTE_CAPACITY_GAL = 330;
 
 // ---------- Status (lifecycle only) ----------
 export type ToteStatus =
@@ -21,22 +23,51 @@ export const TOTE_STATUS_LABELS: Record<ToteStatus, string> = {
 };
 
 // ---------- Location (physical) ----------
-// Either the yard, a specific unit, or a hold/inspection bay.
-// Stored as a kind + optional unit id.
 export type LocationKind = 'yard' | 'unit' | 'hold';
 
 export interface ToteLocation {
   kind: LocationKind;
-  unitId?: string; // only present when kind === 'unit'
+  unitId?: string;
 }
 
-// ---------- Core entities ----------
+// ---------- Products (chemicals) ----------
+export type ProductCategory =
+  | 'corrosion_inhibitor'
+  | 'scale_inhibitor'
+  | 'biocide'
+  | 'friction_reducer'
+  | 'foamer'
+  | 'surfactant'
+  | 'other';
+
+export const PRODUCT_CATEGORY_LABELS: Record<ProductCategory, string> = {
+  corrosion_inhibitor: 'Corrosion Inhibitor',
+  scale_inhibitor: 'Scale Inhibitor',
+  biocide: 'Biocide',
+  friction_reducer: 'Friction Reducer',
+  foamer: 'Foamer',
+  surfactant: 'Surfactant',
+  other: 'Other',
+};
+
 export interface Product {
   id: string;
   name: string;
-  // capacityGal is fixed at TOTE_CAPACITY_GAL for V1 — field reserved for future variability.
+  // Required: every chemical has a density used for weight↔volume conversion
+  // and a default tote size used as the receive-form default.
+  densityLbPerGal: number;
+  defaultToteCapacityGal: number;
+  category?: ProductCategory;
+  manufacturer?: string;
+  // Reorder alert: surface a warning when total on-hand falls below this.
+  reorderThresholdGal?: number;
+  // Optional cost tracking (not surfaced in V2 UI but stored for later).
+  costPerGal?: number;
+  // OSHA: link to the Safety Data Sheet for this chemical.
+  sdsUrl?: string;
 }
 
+// ---------- Units / Jobs ----------
 export interface Unit {
   id: string;
   name: string;
@@ -53,22 +84,43 @@ export interface Job {
   active: boolean;
 }
 
+// ---------- Receiving condition ----------
+export type ToteCondition = 'good' | 'damaged' | 'leaking' | 'seal_broken';
+
+export const TOTE_CONDITION_LABELS: Record<ToteCondition, string> = {
+  good: 'Good',
+  damaged: 'Damaged',
+  leaking: 'Leaking',
+  seal_broken: 'Seal Broken',
+};
+
+// ---------- Totes ----------
 export interface Tote {
   id: string; // e.g. RH-250414-007
   productId: string;
   status: ToteStatus;
   location: ToteLocation;
-  jobId?: string; // optional active job context
+  jobId?: string;
+
+  // Quantity is per-tote: capacity comes from the actual container, not a global.
+  capacityGal: number;
   currentQtyGal: number;
-  receivedAt: string; // ISO timestamp
+
+  // Receiving / traceability metadata. Optional because legacy records may
+  // not have it, but the new Receive flow always populates these.
+  lotNumber?: string;
+  expiresAt?: string; // ISO date
+  vendorBol?: string; // BOL / PO reference
+  vendor?: string; // shipping vendor / supplier name
+  tareWeightLb?: number; // empty container weight, for weigh-to-measure
+  conditionOnArrival?: ToteCondition;
+
+  receivedAt: string;
   createdBy: string;
-  // Sync state is per-record, derived from pending events touching this tote.
-  // Stored here for quick UI badge lookup; recomputed after each event write.
   syncState: 'synced' | 'pending' | 'error';
-  // Denormalized last-updated for quick display in lists.
   updatedAt: string;
   updatedBy: string;
-  updatedLabel?: string; // e.g. "Usage recorded"
+  updatedLabel?: string;
 }
 
 // ---------- Events (append-only log) ----------
@@ -87,14 +139,12 @@ export type EventType =
   | 'status_corrected';
 
 export interface ToteEvent {
-  id: string; // uuid/client-generated
+  id: string;
   toteId: string;
   type: EventType;
-  createdAt: string; // ISO timestamp (client clock)
+  createdAt: string;
   createdBy: string;
-  // Payload is type-specific; kept loose for simplicity.
   payload: Record<string, unknown>;
-  // Offline sync metadata
   synced: boolean;
   syncError?: string;
 }

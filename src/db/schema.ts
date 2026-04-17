@@ -37,14 +37,14 @@ interface ChemTrackDB extends DBSchema {
 }
 
 const DB_NAME = 'chemtrack';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise: Promise<IDBPDatabase<ChemTrackDB>> | null = null;
 
 export function getDB(): Promise<IDBPDatabase<ChemTrackDB>> {
   if (!dbPromise) {
     dbPromise = openDB<ChemTrackDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
+      upgrade(db, oldVersion) {
         if (!db.objectStoreNames.contains('products')) {
           db.createObjectStore('products', { keyPath: 'id' });
         }
@@ -65,6 +65,22 @@ export function getDB(): Promise<IDBPDatabase<ChemTrackDB>> {
           const events = db.createObjectStore('events', { keyPath: 'id' });
           events.createIndex('by-tote', 'toteId');
           // idb's type generation for boolean indexes is fussy; cast to any.
+          events.createIndex('by-synced', 'synced' as never);
+          events.createIndex('by-createdAt', 'createdAt');
+        }
+        // V2 widens Product (density, capacity) and Tote (capacityGal, lot, etc).
+        // Old v1 records lack these required fields, so wipe them and let
+        // seedIfEmpty repopulate with the new shape on next load.
+        if (oldVersion < 2 && oldVersion > 0) {
+          db.deleteObjectStore('products');
+          db.createObjectStore('products', { keyPath: 'id' });
+          db.deleteObjectStore('totes');
+          const totes = db.createObjectStore('totes', { keyPath: 'id' });
+          totes.createIndex('by-status', 'status');
+          totes.createIndex('by-product', 'productId');
+          db.deleteObjectStore('events');
+          const events = db.createObjectStore('events', { keyPath: 'id' });
+          events.createIndex('by-tote', 'toteId');
           events.createIndex('by-synced', 'synced' as never);
           events.createIndex('by-createdAt', 'createdAt');
         }

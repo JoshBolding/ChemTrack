@@ -9,7 +9,7 @@ import {
   listEventsForTote,
 } from '../db/repo';
 import type { Job, Product, Tote, ToteEvent, Unit } from '../types';
-import { TOTE_CAPACITY_GAL } from '../types';
+import { TOTE_CONDITION_LABELS } from '../types';
 import { actionsForStatus } from '../lib/status';
 import {
   PartialBadge,
@@ -97,10 +97,12 @@ export default function ToteDetail() {
         ? 'Hold'
         : unit?.name ?? 'Unit';
 
-  const pct = Math.min(
-    100,
-    (tote.currentQtyGal / TOTE_CAPACITY_GAL) * 100
-  );
+  const capacity = tote.capacityGal;
+  const pct = capacity > 0 ? Math.min(100, (tote.currentQtyGal / capacity) * 100) : 0;
+  const lbs = product ? Math.round(tote.currentQtyGal * product.densityLbPerGal) : null;
+  const expiresSoon = tote.expiresAt
+    ? new Date(tote.expiresAt).getTime() - Date.now() < 1000 * 60 * 60 * 24 * 90
+    : false;
 
   return (
     <Layout title={tote.id} back={from}>
@@ -123,10 +125,12 @@ export default function ToteDetail() {
                 {tote.currentQtyGal}
                 <span className="text-xs text-ink-muted font-normal">
                   {' '}
-                  / {TOTE_CAPACITY_GAL}
+                  / {capacity}
                 </span>
               </div>
-              <div className="text-[11px] text-ink-muted">gallons</div>
+              <div className="text-[11px] text-ink-muted">
+                gal{lbs !== null && <> · {lbs.toLocaleString()} lb</>}
+              </div>
             </div>
           </div>
 
@@ -167,6 +171,63 @@ export default function ToteDetail() {
             </div>
           </div>
         </div>
+
+        {(tote.lotNumber ||
+          tote.vendor ||
+          tote.vendorBol ||
+          tote.expiresAt ||
+          tote.tareWeightLb ||
+          tote.conditionOnArrival) && (
+          <div className="card p-3">
+            <div className="label mb-1.5">Receiving</div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 text-xs">
+              {tote.lotNumber && (
+                <div>
+                  <span className="text-ink-muted">Lot </span>
+                  <span className="font-mono font-medium">{tote.lotNumber}</span>
+                </div>
+              )}
+              {tote.vendor && (
+                <div>
+                  <span className="text-ink-muted">Vendor </span>
+                  <span className="font-medium">{tote.vendor}</span>
+                </div>
+              )}
+              {tote.vendorBol && (
+                <div>
+                  <span className="text-ink-muted">BOL </span>
+                  <span className="font-mono font-medium">{tote.vendorBol}</span>
+                </div>
+              )}
+              {tote.expiresAt && (
+                <div>
+                  <span className="text-ink-muted">Expires </span>
+                  <span className={`font-medium ${expiresSoon ? 'text-amber-700' : ''}`}>
+                    {formatDate(tote.expiresAt)}
+                  </span>
+                </div>
+              )}
+              {tote.tareWeightLb && (
+                <div>
+                  <span className="text-ink-muted">Tare </span>
+                  <span className="font-medium">{tote.tareWeightLb} lb</span>
+                </div>
+              )}
+              {tote.conditionOnArrival && tote.conditionOnArrival !== 'good' && (
+                <div>
+                  <span className="text-ink-muted">Condition </span>
+                  <span className="font-medium text-amber-700">
+                    {TOTE_CONDITION_LABELS[tote.conditionOnArrival]}
+                  </span>
+                </div>
+              )}
+              <div className="col-span-2 mt-0.5">
+                <span className="text-ink-muted">Received </span>
+                <span className="font-medium">{formatDate(tote.receivedAt)}</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         {actions.length > 0 && (
@@ -265,5 +326,14 @@ function formatTime(iso: string): string {
     day: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
+  });
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return d.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
   });
 }
