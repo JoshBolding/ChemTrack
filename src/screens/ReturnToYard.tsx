@@ -23,36 +23,32 @@ export default function ReturnToYard() {
       setTote(t ?? null);
       if (t) {
         setQty(String(t.currentQtyGal));
-        setCondition(t.currentQtyGal === 0 ? 'empty' : t.currentQtyGal >= TOTE_CAPACITY_GAL ? 'full' : 'partial');
+        setCondition(
+          t.currentQtyGal === 0 ? 'empty'
+            : t.currentQtyGal >= TOTE_CAPACITY_GAL ? 'full'
+              : 'partial'
+        );
       }
     })();
   }, [id]);
 
   function selectCondition(next: Condition) {
     setCondition(next);
-    if (next === 'full') {
-      setQty(String(TOTE_CAPACITY_GAL));
-    } else if (next === 'empty') {
-      setQty('0');
-    } else if (tote) {
-      setQty(String(Math.min(TOTE_CAPACITY_GAL, Math.max(0, tote.currentQtyGal))));
-    }
+    if (next === 'full') setQty(String(TOTE_CAPACITY_GAL));
+    else if (next === 'empty') setQty('0');
+    else if (tote) setQty(String(Math.min(TOTE_CAPACITY_GAL, Math.max(0, tote.currentQtyGal))));
   }
 
   async function save() {
     if (!tote) return;
     const qtyNum =
-      condition === 'full'
-        ? TOTE_CAPACITY_GAL
-        : condition === 'empty'
-          ? 0
+      condition === 'full' ? TOTE_CAPACITY_GAL
+        : condition === 'empty' ? 0
           : Math.max(0, Math.min(TOTE_CAPACITY_GAL, Number(qty) || 0));
     setSaving(true);
     const newStatus: ToteStatus =
-      condition === 'damaged'
-        ? 'hold'
-        : condition === 'empty' || qtyNum === 0
-          ? 'empty'
+      condition === 'damaged' ? 'hold'
+        : condition === 'empty' || qtyNum === 0 ? 'empty'
           : 'in_yard';
     await writeEvent({
       tote,
@@ -74,17 +70,15 @@ export default function ReturnToYard() {
 
   return (
     <Layout title="Return to Yard" back={`/tote/${encodeURIComponent(tote.id)}`}>
-      <div className="space-y-4">
-        <div className="card animate-rise-in p-4">
+      <div className="space-y-3">
+        <div className="card p-3">
           <div className="label">Tote</div>
-          <div className="text-lg font-bold">{tote.id}</div>
-          <div className="text-sm text-ink-soft">
-            Currently {tote.currentQtyGal} gal
-          </div>
+          <div className="text-sm font-semibold">{tote.id}</div>
+          <div className="text-xs text-ink-muted">Currently {tote.currentQtyGal} gal</div>
         </div>
 
-        <div className="card animate-rise-in delay-1 p-4">
-          <div className="label mb-2">Condition</div>
+        <div className="card p-3">
+          <div className="label mb-1">Condition</div>
           <div className="grid grid-cols-2 gap-2">
             {(['full', 'partial', 'empty', 'damaged'] as Condition[]).map((c) => (
               <button
@@ -93,26 +87,23 @@ export default function ReturnToYard() {
                 onClick={() => selectCondition(c)}
                 className={
                   condition === c
-                    ? c === 'damaged'
-                      ? 'btn-danger'
-                      : 'btn-primary'
+                    ? c === 'damaged' ? 'btn-danger' : 'btn-primary'
                     : 'btn-secondary'
                 }
               >
-                {c === 'full' ? 'Full' : c.charAt(0).toUpperCase() + c.slice(1)}
+                {c.charAt(0).toUpperCase() + c.slice(1)}
               </button>
             ))}
           </div>
-          <p className="mt-3 text-xs text-ink-muted">
-            Full and Empty lock the saved quantity. Partial and Damaged let you confirm the
-            returned amount.
+          <p className="mt-2 text-xs text-ink-muted">
+            Full/Empty lock the quantity. Partial and Damaged let you edit it.
           </p>
         </div>
 
-        <div className="card animate-rise-in delay-2 p-4">
-          <label className="label block mb-2">Returned Qty (gal)</label>
+        <div className="card p-3">
+          <label className="label block mb-1">Returned Qty (gal)</label>
           <input
-            className="input text-2xl font-bold"
+            className="input text-lg font-bold"
             type="number"
             inputMode="numeric"
             min={0}
@@ -121,30 +112,25 @@ export default function ReturnToYard() {
             onChange={(e) => setQty(e.target.value)}
             disabled={condition === 'full' || condition === 'empty'}
           />
-          <p className="mt-2 text-xs text-ink-muted">
-            Saved as{' '}
+          <p className="mt-1 text-xs text-ink-muted">
+            Saves as{' '}
             <span className="font-semibold text-ink">
               {condition === 'damaged' ? 'Hold' : condition === 'empty' ? 'Empty' : 'In Yard'}
             </span>{' '}
-            with {condition === 'full' ? TOTE_CAPACITY_GAL : condition === 'empty' ? 0 : qty || 0}{' '}
-            gallons.
+            with {condition === 'full' ? TOTE_CAPACITY_GAL : condition === 'empty' ? 0 : qty || 0} gal.
           </p>
         </div>
 
-        <div className="card animate-rise-in delay-3 p-4">
-          <label className="label block mb-2">Note (optional)</label>
+        <div className="card p-3">
+          <label className="label block mb-1">Note (optional)</label>
           <textarea
-            className="input min-h-[80px] py-3"
+            className="input min-h-[64px] py-2"
             value={note}
             onChange={(e) => setNote(e.target.value)}
           />
         </div>
 
-        <button
-          className="btn-primary animate-rise-in delay-4 w-full"
-          disabled={saving}
-          onClick={save}
-        >
+        <button className="btn-primary w-full" disabled={saving} onClick={save}>
           {saving ? 'Saving…' : 'Save Return'}
         </button>
       </div>

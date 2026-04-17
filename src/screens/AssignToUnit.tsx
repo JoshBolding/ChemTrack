@@ -51,18 +51,16 @@ export default function AssignToUnit() {
 
   return (
     <Layout title="Assign to Unit" back={`/tote/${encodeURIComponent(tote.id)}`}>
-      <div className="space-y-4">
-        <div className="card p-4">
+      <div className="space-y-3">
+        <div className="card p-3">
           <div className="label">Tote</div>
-          <div className="text-lg font-bold">{tote.id}</div>
-          <div className="text-ink-soft text-sm">
-            {tote.currentQtyGal} gal
-          </div>
+          <div className="text-sm font-semibold">{tote.id}</div>
+          <div className="text-xs text-ink-muted">{tote.currentQtyGal} gal</div>
         </div>
 
-        <div className="card p-4 space-y-4">
+        <div className="card p-3 space-y-3">
           <div>
-            <label className="label block mb-2">Unit</label>
+            <label className="label block mb-1">Unit</label>
             <select
               className="select"
               value={unitId}
@@ -79,7 +77,7 @@ export default function AssignToUnit() {
           </div>
 
           <div>
-            <label className="label block mb-2">Job (optional)</label>
+            <label className="label block mb-1">Job (optional)</label>
             <select
               className="select"
               value={jobId}
@@ -95,12 +93,11 @@ export default function AssignToUnit() {
           </div>
 
           <div>
-            <label className="label block mb-2">Note (optional)</label>
+            <label className="label block mb-1">Note (optional)</label>
             <textarea
-              className="input min-h-[80px] py-3"
+              className="input min-h-[64px] py-2"
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Anything worth remembering…"
             />
           </div>
         </div>

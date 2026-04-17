@@ -13,9 +13,7 @@ export default function AddNote() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    void (async () => {
-      setTote((await getTote(id)) ?? null);
-    })();
+    void (async () => { setTote((await getTote(id)) ?? null); })();
   }, [id]);
 
   async function save() {
@@ -32,38 +30,26 @@ export default function AddNote() {
     nav(`/tote/${encodeURIComponent(tote.id)}`);
   }
 
-  if (!tote) {
-    return (
-      <Layout title="Loading…" back={`/tote/${id}`}>
-        <div />
-      </Layout>
-    );
-  }
+  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`}><div /></Layout>;
 
   return (
     <Layout title="Add Note" back={`/tote/${encodeURIComponent(tote.id)}`}>
-      <div className="space-y-4">
-        <section className="card animate-rise-in p-5">
+      <div className="space-y-3">
+        <div className="card p-3">
           <div className="label">Tote</div>
-          <div className="mt-1 text-lg font-black tracking-[-0.03em]">{tote.id}</div>
-          <p className="page-intro mt-2">
-            Capture field context, damage notes, or anything the next operator should see.
-          </p>
-        </section>
-
-        <section className="card animate-rise-in delay-1 p-5">
-          <label className="label mb-3 block">Note</label>
+          <div className="text-sm font-semibold">{tote.id}</div>
+        </div>
+        <div className="card p-3">
+          <label className="label block mb-1">Note</label>
           <textarea
-            className="input min-h-[160px] py-4"
+            className="input min-h-[80px] py-2"
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Example: Tote arrived with a torn sleeve but product level looked clean."
             autoFocus
           />
-        </section>
-
+        </div>
         <button
-          className="btn-primary animate-rise-in delay-2 w-full"
+          className="btn-primary w-full"
           disabled={!note.trim() || saving}
           onClick={save}
         >

@@ -20,46 +20,31 @@ export default function ScanTote() {
         scannerRef.current = scanner;
         await scanner.start(
           { facingMode: 'environment' },
-          {
-            fps: 10,
-            qrbox: { width: 260, height: 260 },
-            aspectRatio: 1,
-          },
+          { fps: 10, qrbox: { width: 260, height: 260 }, aspectRatio: 1 },
           async (decodedText) => {
             if (!mounted) return;
             await handleResolved(decodedText.trim());
           },
-          () => {
-            // no-op on per-frame errors — too noisy
-          }
+          () => {},
         );
         if (mounted) setScanning(true);
       } catch (err) {
         if (!mounted) return;
-        setCameraError(
-          err instanceof Error ? err.message : 'Camera unavailable'
-        );
+        setCameraError(err instanceof Error ? err.message : 'Camera unavailable');
       }
     }
-
     void start();
-
     return () => {
       mounted = false;
       const scanner = scannerRef.current;
-      if (scanner && scanner.isScanning) {
-        scanner.stop().catch(() => {});
-      }
+      if (scanner && scanner.isScanning) scanner.stop().catch(() => {});
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleResolved(id: string) {
-    // Stop scanning immediately so we don't fire multiple navigations.
     const scanner = scannerRef.current;
-    if (scanner && scanner.isScanning) {
-      await scanner.stop().catch(() => {});
-    }
+    if (scanner && scanner.isScanning) await scanner.stop().catch(() => {});
     const existing = await getTote(id);
     if (existing) {
       navigate(`/tote/${encodeURIComponent(id)}`);
@@ -77,45 +62,31 @@ export default function ScanTote() {
 
   return (
     <Layout title="Scan Tote" back="/">
-      <div className="space-y-4">
-        <section className="surface-tint animate-rise-in px-5 py-4">
-          <div className="label">Primary Workflow</div>
-          <p className="page-intro mt-2">
-            Use the camera when possible, then fall back to manual entry if the label is dirty
-            or damaged.
-          </p>
-        </section>
-
-        <div className="card animate-rise-in delay-1 overflow-hidden">
-          <div className="relative aspect-square bg-[#10151c]">
+      <div className="space-y-3">
+        <div className="card overflow-hidden">
+          <div className="bg-black aspect-square relative">
             <div id={containerId} className="w-full h-full" />
-            <div className="pointer-events-none absolute inset-[11%] rounded-[28px] border border-white/15" />
             {!scanning && !cameraError && (
               <div className="absolute inset-0 flex items-center justify-center text-white/70 text-sm">
                 Starting camera…
               </div>
             )}
             {cameraError && (
-              <div className="absolute inset-0 flex items-center justify-center p-6 text-center text-white/90">
+              <div className="absolute inset-0 flex items-center justify-center p-4 text-center text-white/90">
                 <div>
-                  <div className="text-lg font-semibold mb-2">
-                    Camera unavailable
-                  </div>
-                  <div className="text-sm opacity-80">{cameraError}</div>
-                  <div className="text-xs opacity-60 mt-2">
-                    Use manual entry below.
-                  </div>
+                  <div className="text-sm font-semibold mb-1">Camera unavailable</div>
+                  <div className="text-xs opacity-80">{cameraError}</div>
                 </div>
               </div>
             )}
           </div>
-          <div className="p-3 text-center text-sm text-ink-muted">
-            Point your camera at the tote's QR label
+          <div className="p-2 text-center text-xs text-ink-muted">
+            Point camera at the tote's QR label
           </div>
         </div>
 
-        <div className="card animate-rise-in delay-2 p-4">
-          <div className="label mb-2">Manual Entry</div>
+        <div className="card p-3">
+          <div className="label mb-1">Manual Entry</div>
           <form onSubmit={submitManual} className="flex gap-2">
             <input
               className="input flex-1"
@@ -126,13 +97,8 @@ export default function ScanTote() {
               autoCorrect="off"
               spellCheck={false}
             />
-            <button className="btn-primary" type="submit">
-              Go
-            </button>
+            <button className="btn-primary" type="submit">Go</button>
           </form>
-          <p className="text-xs text-ink-muted mt-2">
-            Having trouble scanning? Type the ID instead.
-          </p>
         </div>
       </div>
     </Layout>

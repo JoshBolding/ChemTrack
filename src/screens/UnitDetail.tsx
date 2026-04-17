@@ -14,22 +14,15 @@ export default function UnitDetail() {
   useEffect(() => {
     void (async () => {
       const [u, allTotes, prods] = await Promise.all([
-        getUnit(id),
-        listTotes(),
-        listProducts(),
+        getUnit(id), listTotes(), listProducts(),
       ]);
       setUnit(u ?? null);
-      setTotes(
-        allTotes.filter(
-          (t) => t.location.kind === 'unit' && t.location.unitId === id
-        )
-      );
+      setTotes(allTotes.filter((t) => t.location.kind === 'unit' && t.location.unitId === id));
       setProducts(prods);
     })();
   }, [id]);
 
-  const productName = (pid: string) =>
-    products.find((p) => p.id === pid)?.name ?? pid;
+  const productName = (pid: string) => products.find((p) => p.id === pid)?.name ?? pid;
 
   const rollup = totes.reduce<Record<string, { name: string; gal: number; count: number }>>(
     (acc, t) => {
@@ -40,7 +33,7 @@ export default function UnitDetail() {
       acc[t.productId] = row;
       return acc;
     },
-    {}
+    {},
   );
   const totalGal = totes.reduce((n, t) => n + t.currentQtyGal, 0);
 
@@ -48,67 +41,67 @@ export default function UnitDetail() {
 
   return (
     <Layout title={unit.name} back="/units">
-      <div className="space-y-4">
-        <div className="card p-4">
-          <div className="label">Unit</div>
-          <div className="text-xl font-bold">{unit.name}</div>
-          <div className="text-sm text-ink-soft">{unit.region ?? '—'}</div>
-          <div className="mt-3 flex items-baseline justify-between">
-            <div className="text-xs text-ink-muted">
-              {totes.length} tote{totes.length === 1 ? '' : 's'} on unit
+      <div className="space-y-3">
+        <div className="card p-3">
+          <div className="flex items-baseline justify-between">
+            <div>
+              <div className="text-sm font-semibold">{unit.name}</div>
+              <div className="text-xs text-ink-muted">{unit.region ?? '—'}</div>
             </div>
-            <div className="text-2xl font-extrabold text-primary">
-              {totalGal.toLocaleString()}{' '}
-              <span className="text-xs font-semibold text-ink-muted">gal</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="card p-4">
-          <div className="label mb-3">Inventory by product</div>
-          <div className="space-y-1">
-            {Object.values(rollup).map((r) => (
-              <div key={r.name} className="flex justify-between text-sm">
-                <span className="text-ink-soft">{r.name}</span>
-                <span className="font-semibold">
-                  {r.gal.toLocaleString()} gal
-                  <span className="text-ink-muted font-normal"> ({r.count})</span>
-                </span>
+            <div className="text-right">
+              <div className="text-base font-bold">
+                {totalGal.toLocaleString()} <span className="text-xs text-ink-muted font-normal">gal</span>
               </div>
-            ))}
-            {Object.keys(rollup).length === 0 && (
-              <div className="text-sm text-ink-muted">No totes assigned.</div>
-            )}
+              <div className="text-xs text-ink-muted">
+                {totes.length} tote{totes.length === 1 ? '' : 's'}
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="card p-4">
-          <div className="label mb-3">Totes</div>
+        {Object.keys(rollup).length > 0 && (
+          <div className="card p-3">
+            <div className="label mb-2">By product</div>
+            <div className="space-y-0.5">
+              {Object.values(rollup).map((r) => (
+                <div key={r.name} className="flex justify-between text-xs">
+                  <span className="text-ink-muted">{r.name}</span>
+                  <span className="font-medium">
+                    {r.gal.toLocaleString()} gal
+                    <span className="text-ink-muted font-normal"> ({r.count})</span>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="card">
+          <div className="px-3 pt-2.5 pb-1">
+            <span className="label">Totes</span>
+          </div>
           <ul className="divide-y divide-slate-100">
             {totes.map((t) => (
               <li key={t.id}>
                 <Link
                   to={`/tote/${encodeURIComponent(t.id)}`}
-                  className="py-2 flex items-center justify-between gap-2 active:bg-surface-sunken"
+                  className="px-3 py-2 flex items-center justify-between gap-2 active:bg-surface-sunken"
                 >
                   <div>
-                    <div className="font-mono text-sm font-semibold">
-                      {t.id}
-                    </div>
-                    <div className="text-xs text-ink-muted">
-                      {productName(t.productId)}
-                    </div>
+                    <div className="font-mono text-xs font-semibold">{t.id}</div>
+                    <div className="text-xs text-ink-muted">{productName(t.productId)}</div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold">
-                      {t.currentQtyGal} gal
-                    </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs font-medium">{t.currentQtyGal} gal</span>
                     <StatusBadge status={t.status} />
                     <PartialBadge tote={t} />
                   </div>
                 </Link>
               </li>
             ))}
+            {totes.length === 0 && (
+              <li className="px-3 py-4 text-xs text-ink-muted">No totes assigned.</li>
+            )}
           </ul>
         </div>
       </div>

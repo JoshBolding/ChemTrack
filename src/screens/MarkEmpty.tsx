@@ -13,9 +13,7 @@ export default function MarkEmpty() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    void (async () => {
-      setTote((await getTote(id)) ?? null);
-    })();
+    void (async () => { setTote((await getTote(id)) ?? null); })();
   }, [id]);
 
   async function save() {
@@ -36,21 +34,15 @@ export default function MarkEmpty() {
 
   return (
     <Layout title="Mark Empty" back={`/tote/${encodeURIComponent(tote.id)}`}>
-      <div className="space-y-4">
-        <div className="card p-4">
+      <div className="space-y-3">
+        <div className="card p-3">
           <div className="label">Tote</div>
-          <div className="text-lg font-bold">{tote.id}</div>
-          <div className="text-sm text-ink-soft">
-            This will set quantity to 0 and mark the tote empty.
-          </div>
+          <div className="text-sm font-semibold">{tote.id}</div>
+          <div className="text-xs text-ink-muted">Sets quantity to 0 and marks empty.</div>
         </div>
-        <div className="card p-4">
-          <label className="label block mb-2">Note (optional)</label>
-          <textarea
-            className="input min-h-[80px] py-3"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
+        <div className="card p-3">
+          <label className="label block mb-1">Note (optional)</label>
+          <textarea className="input min-h-[64px] py-2" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
         <button className="btn-primary w-full" disabled={saving} onClick={save}>
           {saving ? 'Saving…' : 'Confirm Mark Empty'}

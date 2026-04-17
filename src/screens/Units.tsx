@@ -24,7 +24,7 @@ export default function Units() {
 
   return (
     <Layout title="Units" back="/">
-      <div className="space-y-3">
+      <div className="card divide-y divide-slate-100">
         {units.map((u) => {
           const ts = totesByUnit[u.id] ?? [];
           const gal = ts.reduce((n, t) => n + t.currentQtyGal, 0);
@@ -32,30 +32,19 @@ export default function Units() {
             <Link
               key={u.id}
               to={`/units/${encodeURIComponent(u.id)}`}
-              className={`card p-4 block active:bg-surface-sunken ${
-                !u.active ? 'opacity-60' : ''
-              }`}
+              className={`block px-3 py-2.5 active:bg-surface-sunken ${!u.active ? 'opacity-50' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-lg font-bold">
+                  <div className="text-sm font-semibold">
                     {u.name}
-                    {!u.active && (
-                      <span className="ml-2 text-xs font-semibold text-ink-muted">
-                        (inactive)
-                      </span>
-                    )}
+                    {!u.active && <span className="ml-1 text-xs text-ink-muted">(inactive)</span>}
                   </div>
-                  <div className="text-xs text-ink-muted">
-                    {u.region ?? '—'}
-                  </div>
+                  <div className="text-xs text-ink-muted">{u.region ?? '—'}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-extrabold text-primary">
-                    {gal.toLocaleString()}{' '}
-                    <span className="text-xs font-semibold text-ink-muted">
-                      gal
-                    </span>
+                  <div className="text-sm font-bold">
+                    {gal.toLocaleString()} <span className="text-xs text-ink-muted font-normal">gal</span>
                   </div>
                   <div className="text-xs text-ink-muted">
                     {ts.length} tote{ts.length === 1 ? '' : 's'}

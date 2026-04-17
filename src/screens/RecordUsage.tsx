@@ -76,26 +76,21 @@ export default function RecordUsage() {
 
   return (
     <Layout title="Record Usage" back={`/tote/${encodeURIComponent(tote.id)}`}>
-      <div className="space-y-4">
-        <div className="card p-4">
+      <div className="space-y-3">
+        <div className="card p-3">
           <div className="label">Tote</div>
-          <div className="text-lg font-bold">{tote.id}</div>
-          <div className="text-sm text-ink-soft">
-            {unit ? `On ${unit.name}` : 'Location: —'} • Currently{' '}
-            <span className="font-semibold text-ink">
-              {tote.currentQtyGal} gal
-            </span>
+          <div className="text-sm font-semibold">{tote.id}</div>
+          <div className="text-xs text-ink-muted">
+            {unit ? `On ${unit.name}` : 'Location: —'} · {tote.currentQtyGal} gal
           </div>
         </div>
 
-        <div className="card p-4">
-          <div className="label mb-2">Entry Method</div>
-          <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="card p-3">
+          <div className="label mb-1">Entry Method</div>
+          <div className="grid grid-cols-2 gap-2 mb-3">
             <button
               onClick={() => setMode('remaining')}
-              className={
-                mode === 'remaining' ? 'btn-primary' : 'btn-secondary'
-              }
+              className={mode === 'remaining' ? 'btn-primary' : 'btn-secondary'}
               type="button"
             >
               Remaining
@@ -109,11 +104,11 @@ export default function RecordUsage() {
             </button>
           </div>
 
-          <label className="label block mb-2">
+          <label className="label block mb-1">
             {mode === 'remaining' ? 'Gallons Remaining' : 'Gallons Used'}
           </label>
           <input
-            className="input text-2xl font-bold"
+            className="input text-lg font-bold"
             type="number"
             inputMode="numeric"
             min={0}
@@ -122,22 +117,18 @@ export default function RecordUsage() {
             onChange={(e) => setValue(e.target.value)}
           />
 
-          <div className="mt-3 text-sm text-ink-muted">
-            New current qty:{' '}
+          <div className="mt-2 text-xs text-ink-muted">
+            New qty:{' '}
             <span className="font-semibold text-ink">{newQty} gal</span>
             {usedDelta > 0 && (
-              <>
-                {' '}
-                • Used this entry:{' '}
-                <span className="font-semibold text-ink">{usedDelta} gal</span>
-              </>
+              <> · Used: <span className="font-semibold text-ink">{usedDelta} gal</span></>
             )}
           </div>
         </div>
 
-        <div className="card p-4 space-y-4">
+        <div className="card p-3 space-y-3">
           <div>
-            <label className="label block mb-2">Attribute to Job</label>
+            <label className="label block mb-1">Attribute to Job</label>
             <select
               className="select"
               value={jobId}
@@ -150,30 +141,19 @@ export default function RecordUsage() {
                 </option>
               ))}
             </select>
-            <p className="text-xs text-ink-muted mt-1">
-              Defaults to tote's current job. Override if used across jobs.
-            </p>
           </div>
           <div>
-            <label className="label block mb-2">Note (optional)</label>
+            <label className="label block mb-1">Note (optional)</label>
             <textarea
-              className="input min-h-[80px] py-3"
+              className="input min-h-[64px] py-2"
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
         </div>
 
-        <button
-          className="btn-primary w-full"
-          disabled={saving}
-          onClick={save}
-        >
-          {saving
-            ? 'Saving…'
-            : newQty === 0
-              ? 'Save & Mark Empty'
-              : 'Save Update'}
+        <button className="btn-primary w-full" disabled={saving} onClick={save}>
+          {saving ? 'Saving…' : newQty === 0 ? 'Save & Mark Empty' : 'Save Update'}
         </button>
       </div>
     </Layout>

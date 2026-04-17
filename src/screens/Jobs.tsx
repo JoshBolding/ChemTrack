@@ -16,36 +16,28 @@ export default function Jobs() {
 
   return (
     <Layout title="Jobs" back="/">
-      <div className="space-y-3">
+      <div className="card divide-y divide-slate-100">
         {jobs.map((j) => {
           const ts = totes.filter((t) => t.jobId === j.id);
           const gal = ts.reduce((n, t) => n + t.currentQtyGal, 0);
           return (
             <div
               key={j.id}
-              className={`card p-4 ${!j.active ? 'opacity-60' : ''}`}
+              className={`px-3 py-2.5 ${!j.active ? 'opacity-50' : ''}`}
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="text-lg font-bold">
+                  <div className="text-sm font-semibold">
                     {j.name}
-                    {!j.active && (
-                      <span className="ml-2 text-xs font-semibold text-ink-muted">
-                        (inactive)
-                      </span>
-                    )}
+                    {!j.active && <span className="ml-1 text-xs text-ink-muted">(inactive)</span>}
                   </div>
                   <div className="text-xs text-ink-muted">
-                    {j.customer}
-                    {j.region ? ` • ${j.region}` : ''}
+                    {j.customer}{j.region ? ` · ${j.region}` : ''}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-extrabold text-primary">
-                    {gal.toLocaleString()}{' '}
-                    <span className="text-xs font-semibold text-ink-muted">
-                      gal
-                    </span>
+                  <div className="text-sm font-bold">
+                    {gal.toLocaleString()} <span className="text-xs text-ink-muted font-normal">gal</span>
                   </div>
                   <div className="text-xs text-ink-muted">
                     {ts.length} tote{ts.length === 1 ? '' : 's'}
@@ -55,6 +47,9 @@ export default function Jobs() {
             </div>
           );
         })}
+        {jobs.length === 0 && (
+          <div className="px-3 py-4 text-xs text-ink-muted text-center">No jobs yet.</div>
+        )}
       </div>
     </Layout>
   );

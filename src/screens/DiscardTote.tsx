@@ -13,9 +13,7 @@ export default function DiscardTote() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    void (async () => {
-      setTote((await getTote(id)) ?? null);
-    })();
+    void (async () => { setTote((await getTote(id)) ?? null); })();
   }, [id]);
 
   async function save() {
@@ -36,21 +34,21 @@ export default function DiscardTote() {
 
   return (
     <Layout title="Discard Tote" back={`/tote/${encodeURIComponent(tote.id)}`}>
-      <div className="space-y-4">
-        <div className="card p-4 border-red-200 bg-red-50">
-          <div className="text-sm text-red-800">
+      <div className="space-y-3">
+        <div className="card p-3 border-red-200 bg-red-50">
+          <div className="text-xs text-red-800">
             Discarding retires this tote from service. History is preserved but
             it will no longer appear in active inventory.
           </div>
         </div>
-        <div className="card p-4">
+        <div className="card p-3">
           <div className="label">Tote</div>
-          <div className="text-lg font-bold">{tote.id}</div>
+          <div className="text-sm font-semibold">{tote.id}</div>
         </div>
-        <div className="card p-4">
-          <label className="label block mb-2">Reason / Note</label>
+        <div className="card p-3">
+          <label className="label block mb-1">Reason / Note</label>
           <textarea
-            className="input min-h-[80px] py-3"
+            className="input min-h-[64px] py-2"
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Why is this tote being discarded?"

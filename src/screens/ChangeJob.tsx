@@ -41,33 +41,23 @@ export default function ChangeJob() {
 
   return (
     <Layout title="Change Job" back={`/tote/${encodeURIComponent(tote.id)}`}>
-      <div className="space-y-4">
-        <div className="card p-4">
+      <div className="space-y-3">
+        <div className="card p-3">
           <div className="label">Tote</div>
-          <div className="text-lg font-bold">{tote.id}</div>
+          <div className="text-sm font-semibold">{tote.id}</div>
         </div>
-        <div className="card p-4">
-          <label className="label block mb-2">Active Job</label>
-          <select
-            className="select"
-            value={jobId}
-            onChange={(e) => setJobId(e.target.value)}
-          >
+        <div className="card p-3">
+          <label className="label block mb-1">Active Job</label>
+          <select className="select" value={jobId} onChange={(e) => setJobId(e.target.value)}>
             <option value="">No job context</option>
             {jobs.map((j) => (
-              <option key={j.id} value={j.id}>
-                {j.name} — {j.customer}
-              </option>
+              <option key={j.id} value={j.id}>{j.name} — {j.customer}</option>
             ))}
           </select>
         </div>
-        <div className="card p-4">
-          <label className="label block mb-2">Note (optional)</label>
-          <textarea
-            className="input min-h-[80px] py-3"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
+        <div className="card p-3">
+          <label className="label block mb-1">Note (optional)</label>
+          <textarea className="input min-h-[64px] py-2" value={note} onChange={(e) => setNote(e.target.value)} />
         </div>
         <button className="btn-primary w-full" disabled={saving} onClick={save}>
           {saving ? 'Saving…' : 'Save Job Change'}
