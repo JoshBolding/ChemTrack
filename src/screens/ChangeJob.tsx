@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote, listJobs } from '../db/repo';
+import { currentActorId } from '../db/auth';
 import type { Job, Tote } from '../types';
 import { writeEvent } from '../lib/events';
 
@@ -31,7 +32,7 @@ export default function ChangeJob() {
       tote,
       type: 'job_context_changed',
       payload: { jobId: jobId || null, note },
-      createdBy: 'jacob',
+      createdBy: currentActorId(),
       toteUpdates: { jobId: jobId || undefined },
       updatedLabel: 'Job changed',
     });

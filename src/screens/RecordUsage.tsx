@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote, getUnit, listJobs } from '../db/repo';
+import { currentActorId } from '../db/auth';
 import type { Job, Tote, Unit } from '../types';
 import { writeEvent } from '../lib/events';
 
@@ -61,7 +62,7 @@ export default function RecordUsage() {
         jobId: jobId || null,
         note,
       },
-      createdBy: 'jacob',
+      createdBy: currentActorId(),
       toteUpdates: {
         currentQtyGal: newQty,
         status: markEmpty ? 'empty' : tote.status,

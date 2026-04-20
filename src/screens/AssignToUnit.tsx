@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote, listJobs, listUnits } from '../db/repo';
+import { currentActorId } from '../db/auth';
 import type { Job, Tote, Unit } from '../types';
 import { writeEvent } from '../lib/events';
 
@@ -37,7 +38,7 @@ export default function AssignToUnit() {
       tote,
       type: 'assigned_to_unit',
       payload: { unitId, jobId: jobId || null, note },
-      createdBy: 'jacob',
+      createdBy: currentActorId(),
       toteUpdates: {
         status: 'assigned_to_unit',
         location: { kind: 'unit', unitId },

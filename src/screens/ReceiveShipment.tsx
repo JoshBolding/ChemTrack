@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Layout from '../components/Layout';
 import { listProducts, listTotes, putTote, appendEvent } from '../db/repo';
+import { currentActorId } from '../db/auth';
 import type { Product, Tote, ToteCondition } from '../types';
 import { TOTE_CONDITION_LABELS } from '../types';
 import { makeToteId, uuid } from '../lib/ids';
@@ -115,10 +116,10 @@ export default function ReceiveShipment() {
         tareWeightLb: tareWeightLb ? Number(tareWeightLb) : undefined,
         conditionOnArrival: condition,
         receivedAt: nowIso,
-        createdBy: 'jacob',
+        createdBy: currentActorId(),
         syncState: 'synced',
         updatedAt: nowIso,
-        updatedBy: 'jacob',
+        updatedBy: currentActorId(),
         updatedLabel: 'Received',
       };
       await putTote(tote);
@@ -127,7 +128,7 @@ export default function ReceiveShipment() {
         toteId: id,
         type: 'received',
         createdAt: nowIso,
-        createdBy: 'jacob',
+        createdBy: currentActorId(),
         payload: {
           productId,
           qty,

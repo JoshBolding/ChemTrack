@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote, getUnit, listUnits } from '../db/repo';
+import { currentActorId } from '../db/auth';
 import type { Tote, Unit } from '../types';
 import { writeEvent } from '../lib/events';
 
@@ -43,7 +44,7 @@ export default function TransferToUnit() {
       tote,
       type: 'transferred',
       payload: { fromUnitId: tote.location.unitId, toUnitId, note },
-      createdBy: 'jacob',
+      createdBy: currentActorId(),
       toteUpdates: { location: { kind: 'unit', unitId: toUnitId } },
       updatedLabel: 'Transferred',
     });

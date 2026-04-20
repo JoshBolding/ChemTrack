@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote } from '../db/repo';
+import { currentActorId } from '../db/auth';
 import type { Tote, ToteStatus } from '../types';
 import { writeEvent } from '../lib/events';
 
@@ -57,7 +58,7 @@ export default function ReturnToYard() {
       tote,
       type: 'returned_to_yard',
       payload: { qtyNum, condition, note },
-      createdBy: 'jacob',
+      createdBy: currentActorId(),
       toteUpdates: {
         status: newStatus,
         location: { kind: condition === 'damaged' ? 'hold' : 'yard' },

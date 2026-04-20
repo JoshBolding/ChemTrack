@@ -14,7 +14,7 @@ import {
 import { uuid } from '../lib/ids';
 
 const NOW = '2026-04-14T09:00:00.000Z';
-const USER = 'jacob';
+const USER = 'admin';
 
 const products: Product[] = [
   {

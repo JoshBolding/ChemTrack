@@ -16,7 +16,7 @@ export interface AuthUser {
 export const LOCAL_FALLBACK_USER: AuthUser = {
   id: 'local',
   email: 'local@chemtrack.dev',
-  displayName: 'jacob',
+  displayName: 'admin',
 };
 
 let cachedUser: AuthUser | null = null;

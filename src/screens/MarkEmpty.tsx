@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { getTote } from '../db/repo';
+import { currentActorId } from '../db/auth';
 import type { Tote } from '../types';
 import { writeEvent } from '../lib/events';
 
@@ -24,7 +25,7 @@ export default function MarkEmpty() {
       tote,
       type: 'marked_empty',
       payload: { note },
-      createdBy: 'jacob',
+      createdBy: currentActorId(),
       toteUpdates: { status: 'empty', currentQtyGal: 0 },
       updatedLabel: 'Marked empty',
     });
