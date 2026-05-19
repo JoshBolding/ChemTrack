@@ -27,30 +27,63 @@ body {
 
 @layer components {
   .btn {
-    @apply inline-flex items-center justify-center min-h-[56px] px-5 rounded-2xl text-lg font-semibold select-none active:scale-[0.98] transition;
+    @apply inline-flex items-center justify-center gap-2 min-h-[56px] px-5 rounded-lg text-sm font-extrabold uppercase tracking-wide select-none active:scale-[0.98] transition disabled:opacity-50 disabled:active:scale-100;
   }
   .btn-primary {
     @apply btn bg-primary text-white active:bg-primary-dark shadow-sm;
   }
+  .btn-action {
+    @apply btn bg-action text-white active:bg-action-dark shadow-sm;
+  }
   .btn-secondary {
-    @apply btn bg-white text-ink border border-slate-200 active:bg-surface-sunken;
+    @apply btn bg-white text-ink border border-slate-300 active:bg-surface-sunken;
   }
   .btn-danger {
     @apply btn bg-red-600 text-white active:bg-red-700;
   }
+  .btn-quiet {
+    @apply btn bg-transparent text-ink border border-slate-300 active:bg-surface-sunken;
+  }
   .card {
-    @apply bg-white rounded-2xl border border-slate-200 shadow-sm;
+    @apply bg-white rounded-lg border border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.04)];
+  }
+  .panel {
+    @apply bg-white rounded-lg border border-slate-200 shadow-[0_8px_24px_rgba(15,23,42,0.06)];
   }
   .label {
-    @apply text-xs font-medium uppercase tracking-wide text-ink-muted;
+    @apply text-[11px] font-bold uppercase tracking-wide text-ink-muted;
   }
   .value {
     @apply text-base font-semibold text-ink;
   }
   .input {
-    @apply w-full min-h-[56px] px-4 rounded-2xl border border-slate-300 bg-white text-lg focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20;
+    @apply w-full min-h-[56px] px-4 rounded-lg border border-slate-300 bg-white text-base focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20;
   }
   .select {
     @apply input appearance-none pr-10;
+  }
+  .row-link {
+    @apply flex items-center justify-between gap-3 py-3 active:bg-surface-sunken;
+  }
+  .scan-camera-feed,
+  .scan-camera-feed > div,
+  .scan-camera-feed div[id$='__scan_region'] {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    overflow: hidden !important;
+  }
+  .scan-camera-feed video {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center center !important;
+  }
+  .scan-camera-feed #qr-shaded-region,
+  .scan-camera-feed img {
+    display: none !important;
   }
 }

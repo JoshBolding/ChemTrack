@@ -5,6 +5,7 @@ import { getTote, getUnit, listJobs } from '../db/repo';
 import type { Job, Tote, Unit } from '../types';
 import { TOTE_CAPACITY_GAL } from '../types';
 import { writeEvent } from '../lib/events';
+import { Briefcase, Minus, Plus } from 'lucide-react';
 
 type Mode = 'remaining' | 'used';
 
@@ -45,10 +46,11 @@ export default function RecordUsage() {
     if (!tote) return 0;
     return Math.max(0, tote.currentQtyGal - newQty);
   }, [tote, newQty]);
+  const invalid = newQty < 0 || newQty > TOTE_CAPACITY_GAL || !jobId;
 
   async function save() {
     if (!tote) return;
-    if (newQty < 0 || newQty > TOTE_CAPACITY_GAL) return;
+    if (invalid) return;
     setSaving(true);
     const markEmpty = newQty === 0;
     await writeEvent({
@@ -61,7 +63,7 @@ export default function RecordUsage() {
         jobId: jobId || null,
         note,
       },
-      createdBy: 'jacob',
+      createdBy: 'operator',
       toteUpdates: {
         currentQtyGal: newQty,
         status: markEmpty ? 'empty' : tote.status,
@@ -72,78 +74,136 @@ export default function RecordUsage() {
     nav(`/tote/${encodeURIComponent(tote.id)}`);
   }
 
-  if (!tote) return <Layout title="Loading…" back={`/tote/${id}`}><div /></Layout>;
+  if (!tote) return <Layout title="Loading..." back={`/tote/${id}`}><div /></Layout>;
+
+  function step(delta: number) {
+    const current = Number(value) || 0;
+    const next = Math.max(0, Math.min(TOTE_CAPACITY_GAL, current + delta));
+    setValue(String(next));
+  }
 
   return (
     <Layout title="Record Usage" back={`/tote/${encodeURIComponent(tote.id)}`}>
       <div className="space-y-4">
-        <div className="card p-4">
-          <div className="label">Tote</div>
-          <div className="text-lg font-bold">{tote.id}</div>
-          <div className="text-sm text-ink-soft">
+        <section className="panel p-4">
+          <div className="font-mono text-2xl font-extrabold">{tote.id}</div>
+          <div className="mt-1 text-sm text-ink-soft">
             {unit ? `On ${unit.name}` : 'Location: —'} • Currently{' '}
             <span className="font-semibold text-ink">
               {tote.currentQtyGal} gal
             </span>
           </div>
-        </div>
+        </section>
 
-        <div className="card p-4">
+        <section className="panel p-4">
           <div className="label mb-2">Entry Method</div>
-          <div className="grid grid-cols-2 gap-2 mb-4">
+          <div className="mb-5 grid grid-cols-2 overflow-hidden rounded-lg border border-slate-300">
             <button
               onClick={() => setMode('remaining')}
-              className={
-                mode === 'remaining' ? 'btn-primary' : 'btn-secondary'
-              }
+              className={`min-h-[56px] text-sm font-extrabold uppercase tracking-wide ${
+                mode === 'remaining'
+                  ? 'bg-primary text-white'
+                  : 'bg-white text-ink'
+              }`}
               type="button"
             >
               Remaining
             </button>
             <button
               onClick={() => setMode('used')}
-              className={mode === 'used' ? 'btn-primary' : 'btn-secondary'}
+              className={`min-h-[56px] border-l border-slate-300 text-sm font-extrabold uppercase tracking-wide ${
+                mode === 'used' ? 'bg-primary text-white' : 'bg-white text-ink'
+              }`}
               type="button"
             >
               Used
             </button>
           </div>
 
-          <label className="label block mb-2">
+          <label className="mb-2 block text-sm text-ink-soft">
             {mode === 'remaining' ? 'Gallons Remaining' : 'Gallons Used'}
           </label>
-          <input
-            className="input text-2xl font-bold"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            max={TOTE_CAPACITY_GAL}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-          />
+          <div className="grid grid-cols-[56px_1fr_56px] items-center gap-3">
+            <button type="button" className="btn-secondary min-h-[56px] px-0" onClick={() => step(-10)}>
+              <Minus size={22} />
+            </button>
+            <div className="flex items-baseline justify-center gap-2 border-b border-slate-200 pb-2">
+              <input
+                className="w-32 bg-transparent text-center text-6xl font-extrabold tracking-tight outline-none"
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={TOTE_CAPACITY_GAL}
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+              />
+              <span className="text-xl font-semibold">gal</span>
+            </div>
+            <button type="button" className="btn-secondary min-h-[56px] px-0" onClick={() => step(10)}>
+              <Plus size={22} />
+            </button>
+          </div>
 
-          <div className="mt-3 text-sm text-ink-muted">
-            New current qty:{' '}
-            <span className="font-semibold text-ink">{newQty} gal</span>
+          <div className="mt-3 text-center text-sm text-ink-muted">
+            0 - {TOTE_CAPACITY_GAL} gal
             {usedDelta > 0 && (
               <>
-                {' '}
-                • Used this entry:{' '}
-                <span className="font-semibold text-ink">{usedDelta} gal</span>
+                {' '}· Used this entry:{' '}
+                <span className="font-bold text-ink">{usedDelta} gal</span>
               </>
             )}
           </div>
-        </div>
 
-        <div className="card p-4 space-y-4">
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {[280, 210, 0].map((preset) => (
+              <button
+                key={preset}
+                type="button"
+                className="min-h-[48px] rounded-lg border border-slate-300 bg-white px-2 text-sm font-extrabold active:bg-surface-sunken"
+                onClick={() => {
+                  setMode('remaining');
+                  setValue(String(preset));
+                }}
+              >
+                {preset} gal
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="panel p-4">
+          <div className="label mb-2">New Quantity</div>
+          <div className="flex items-end justify-between">
+            <div>
+              <span className="text-3xl font-extrabold">{newQty}</span>
+              <span className="ml-1 text-lg font-semibold text-ink-soft">
+                / {TOTE_CAPACITY_GAL} gal
+              </span>
+            </div>
+            <div className="text-sm font-bold text-ink-muted">
+              {Math.round((newQty / TOTE_CAPACITY_GAL) * 100)}%
+            </div>
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-sunken">
+            <div
+              className="h-full rounded-full bg-field-amber"
+              style={{ width: `${Math.min(100, Math.max(0, (newQty / TOTE_CAPACITY_GAL) * 100))}%` }}
+            />
+          </div>
+        </section>
+
+        <section className="panel p-4 space-y-4">
           <div>
-            <label className="label block mb-2">Attribute to Job</label>
+            <label className="label mb-2 flex items-center gap-2">
+              <Briefcase size={15} />
+              Job (required)
+            </label>
             <select
               className="select"
               value={jobId}
               onChange={(e) => setJobId(e.target.value)}
             >
-              <option value="">No job</option>
+              <option value="">Select job</option>
               {jobs.map((j) => (
                 <option key={j.id} value={j.id}>
                   {j.name}
@@ -162,18 +222,21 @@ export default function RecordUsage() {
               onChange={(e) => setNote(e.target.value)}
             />
           </div>
-        </div>
+        </section>
 
         <button
           className="btn-primary w-full"
-          disabled={saving}
+          disabled={saving || invalid}
           onClick={save}
         >
           {saving
-            ? 'Saving…'
+            ? 'Saving...'
             : newQty === 0
               ? 'Save & Mark Empty'
               : 'Save Update'}
+        </button>
+        <button type="button" className="btn-quiet w-full" onClick={() => nav(`/tote/${encodeURIComponent(tote.id)}`)}>
+          Cancel
         </button>
       </div>
     </Layout>

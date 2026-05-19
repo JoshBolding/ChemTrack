@@ -1,40 +1,58 @@
 import { Link } from 'react-router-dom';
 import type { ReactNode } from 'react';
-import OfflineBadge from './OfflineBadge';
+import { ArrowLeft } from 'lucide-react';
+import BottomNav from './BottomNav';
 
 interface LayoutProps {
   title: string;
   back?: string;
   children: ReactNode;
   rightSlot?: ReactNode;
+  showBottomNav?: boolean;
+  dark?: boolean;
 }
 
-export default function Layout({ title, back, children, rightSlot }: LayoutProps) {
+export default function Layout({
+  title,
+  back,
+  children,
+  rightSlot,
+  showBottomNav = false,
+  dark = true,
+}: LayoutProps) {
   return (
-    <div className="min-h-full flex flex-col">
-      <header className="sticky top-0 z-10 bg-primary text-white px-4 pt-3 pb-3 shadow-sm">
-        <div className="flex items-center gap-3">
+    <div className="min-h-full bg-surface-alt">
+      <header
+        className={`sticky top-0 z-10 px-4 pb-3 pt-3 shadow-sm ${
+          dark ? 'bg-chrome text-white' : 'bg-white text-ink'
+        }`}
+      >
+        <div className="mx-auto flex max-w-xl items-center gap-3">
           {back ? (
             <Link
               to={back}
-              className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl active:bg-white/10"
+              className={`flex min-h-[44px] min-w-[44px] items-center justify-center rounded-lg ${
+                dark ? 'active:bg-white/10' : 'active:bg-surface-sunken'
+              }`}
               aria-label="Back"
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M15 18l-6-6 6-6" />
-              </svg>
+              <ArrowLeft size={24} strokeWidth={2.4} />
             </Link>
           ) : (
-            <div className="w-2" />
+            <div className="min-h-[44px] min-w-[44px]" />
           )}
-          <h1 className="text-xl font-bold flex-1 truncate">{title}</h1>
-          {rightSlot}
-          <OfflineBadge />
+          <h1 className="flex-1 truncate text-center text-base font-extrabold">
+            {title}
+          </h1>
+          <div className="flex min-h-[44px] min-w-[44px] items-center justify-end">
+            {rightSlot}
+          </div>
         </div>
       </header>
-      <main className="flex-1 px-4 py-4 pb-24 max-w-xl mx-auto w-full">
+      <main className="mx-auto w-full max-w-xl px-4 py-4 pb-24">
         {children}
       </main>
+      {showBottomNav && <BottomNav />}
     </div>
   );
 }

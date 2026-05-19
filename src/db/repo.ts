@@ -76,6 +76,11 @@ export async function listEventsForTote(toteId: string): Promise<ToteEvent[]> {
   return all.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
 }
 
+export async function listEvents(): Promise<ToteEvent[]> {
+  const all = await (await getDB()).getAll('events');
+  return all.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+}
+
 export async function appendEvent(e: ToteEvent): Promise<void> {
   await (await getDB()).put('events', e);
 }

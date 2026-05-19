@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import Layout from '../components/Layout';
 import { listTotes, listUnits } from '../db/repo';
 import type { Tote, Unit } from '../types';
+import { ChevronRight, Truck } from 'lucide-react';
 
 export default function Units() {
   const [units, setUnits] = useState<Unit[]>([]);
@@ -23,7 +24,7 @@ export default function Units() {
   }, []);
 
   return (
-    <Layout title="Units" back="/">
+    <Layout title="Units" back="/" showBottomNav>
       <div className="space-y-3">
         {units.map((u) => {
           const ts = totesByUnit[u.id] ?? [];
@@ -32,13 +33,16 @@ export default function Units() {
             <Link
               key={u.id}
               to={`/units/${encodeURIComponent(u.id)}`}
-              className={`card p-4 block active:bg-surface-sunken ${
+              className={`panel block p-4 active:bg-surface-sunken ${
                 !u.active ? 'opacity-60' : ''
               }`}
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-lg font-bold">
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-surface-sunken text-action">
+                  <Truck size={22} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-lg font-extrabold">
                     {u.name}
                     {!u.active && (
                       <span className="ml-2 text-xs font-semibold text-ink-muted">
@@ -51,7 +55,7 @@ export default function Units() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xl font-extrabold text-primary">
+                  <div className="text-xl font-extrabold text-action">
                     {gal.toLocaleString()}{' '}
                     <span className="text-xs font-semibold text-ink-muted">
                       gal
@@ -61,6 +65,7 @@ export default function Units() {
                     {ts.length} tote{ts.length === 1 ? '' : 's'}
                   </div>
                 </div>
+                <ChevronRight size={18} className="text-ink-muted" />
               </div>
             </Link>
           );

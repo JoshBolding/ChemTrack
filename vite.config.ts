@@ -2,11 +2,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// GitHub Pages deploys under /ChemTrack/ — set base accordingly in prod.
-const isProd = process.env.NODE_ENV === 'production';
+// Vercel deploys at the site root. Set VITE_BASE_PATH=/ChemTrack/ only for GitHub Pages.
+const base = process.env.VITE_BASE_PATH ?? '/';
 
 export default defineConfig({
-  base: isProd ? '/ChemTrack/' : '/',
+  base,
   plugins: [
     react(),
     VitePWA({
@@ -15,7 +15,7 @@ export default defineConfig({
       manifest: {
         name: 'ChemTrack',
         short_name: 'ChemTrack',
-        description: 'Red Hawk chemical tote tracking',
+        description: 'Chemical tote tracking for field operations',
         theme_color: '#b8202e',
         background_color: '#0f172a',
         display: 'standalone',

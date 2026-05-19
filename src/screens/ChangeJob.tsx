@@ -30,7 +30,7 @@ export default function ChangeJob() {
       tote,
       type: 'job_context_changed',
       payload: { jobId: jobId || null, note },
-      createdBy: 'jacob',
+      createdBy: 'operator',
       toteUpdates: { jobId: jobId || undefined },
       updatedLabel: 'Job changed',
     });

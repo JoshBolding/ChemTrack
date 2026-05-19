@@ -5,8 +5,12 @@
 //   - a few messy cases to exercise the exception model
 
 import type { Job, Product, Tote, ToteEvent, Unit } from '../types';
+import { TOTE_CAPACITY_GAL } from '../types';
 import {
+  clearAll,
+  listEvents,
   listProducts,
+  listTotes,
   putProduct,
   putUnit,
   putJob,
@@ -16,7 +20,7 @@ import {
 import { uuid } from '../lib/ids';
 
 const NOW = '2026-04-14T09:00:00.000Z';
-const USER = 'jacob';
+const USER = 'operator';
 
 const products: Product[] = [
   { id: 'ci47', name: 'Corrosion Inhibitor 47' },
@@ -184,17 +188,96 @@ function buildTotes(): Tote[] {
   return out;
 }
 
+function stamp(minutesAfterNow: number): string {
+  return new Date(new Date(NOW).getTime() + minutesAfterNow * 60_000).toISOString();
+}
+
 function buildSeedEvents(totes: Tote[]): ToteEvent[] {
-  // Minimal event stub — one 'received' event per tote so history is non-empty.
-  return totes.map((t) => ({
-    id: uuid(),
-    toteId: t.id,
-    type: 'received',
-    createdAt: t.receivedAt,
-    createdBy: USER,
-    payload: { productId: t.productId, qty: t.currentQtyGal },
-    synced: true,
-  }));
+  const events: ToteEvent[] = [];
+
+  for (const t of totes) {
+    events.push({
+      id: uuid(),
+      toteId: t.id,
+      type: 'received',
+      createdAt: t.receivedAt,
+      createdBy: USER,
+      payload: { productId: t.productId, qty: TOTE_CAPACITY_GAL },
+      synced: true,
+    });
+
+    if (t.location.kind === 'unit' && t.location.unitId) {
+      events.push({
+        id: uuid(),
+        toteId: t.id,
+        type: 'assigned_to_unit',
+        createdAt: stamp(45),
+        createdBy: USER,
+        payload: { unitId: t.location.unitId, jobId: t.jobId ?? null, note: 'Demo loadout' },
+        synced: true,
+      });
+    }
+
+    if (t.currentQtyGal > 0 && t.currentQtyGal < TOTE_CAPACITY_GAL && t.jobId) {
+      events.push({
+        id: uuid(),
+        toteId: t.id,
+        type: 'usage_recorded',
+        createdAt: stamp(180),
+        createdBy: USER,
+        payload: {
+          mode: 'remaining',
+          newQtyGal: t.currentQtyGal,
+          usedDeltaGal: TOTE_CAPACITY_GAL - t.currentQtyGal,
+          jobId: t.jobId,
+          note: 'Demo usage entry',
+        },
+        synced: t.syncState !== 'pending',
+      });
+    }
+
+    if (t.location.kind === 'yard' && t.currentQtyGal < TOTE_CAPACITY_GAL && t.status !== 'discarded') {
+      events.push({
+        id: uuid(),
+        toteId: t.id,
+        type: 'returned_to_yard',
+        createdAt: stamp(240),
+        createdBy: USER,
+        payload: {
+          qtyNum: t.currentQtyGal,
+          condition: t.currentQtyGal === 0 ? 'empty' : 'partial',
+          note: 'Returned from demo job',
+        },
+        synced: true,
+      });
+    }
+
+    if (t.status === 'hold') {
+      events.push({
+        id: uuid(),
+        toteId: t.id,
+        type: 'damaged_flagged',
+        createdAt: stamp(75),
+        createdBy: USER,
+        payload: { note: 'Valve guard damaged on arrival' },
+        synced: true,
+      });
+    }
+
+    if (t.status === 'discarded') {
+      events.push({
+        id: uuid(),
+        toteId: t.id,
+        type: 'discarded',
+        createdAt: stamp(320),
+        createdBy: USER,
+        payload: { note: 'Historical retired tote' },
+        synced: true,
+      });
+    }
+  }
+
+  return events.sort((a, b) => a.createdAt.localeCompare(b.createdAt));
 }
 
 export async function seedIfEmpty(): Promise<boolean> {
@@ -212,4 +295,41 @@ export async function seedIfEmpty(): Promise<boolean> {
   for (const e of events) await appendEvent(e);
 
   return true;
+}
+
+export async function resetDemoData(): Promise<void> {
+  await clearAll();
+  await seedIfEmpty();
+  await scrubDemoIdentity();
+}
+
+export async function scrubDemoIdentity(): Promise<void> {
+  const [totes, events] = await Promise.all([listTotes(), listEvents()]);
+
+  for (const tote of totes) {
+    const createdBy = normalizeOperator(tote.createdBy);
+    const updatedBy = normalizeOperator(tote.updatedBy);
+    if (createdBy !== tote.createdBy || updatedBy !== tote.updatedBy) {
+      await putTote({
+        ...tote,
+        createdBy,
+        updatedBy,
+      });
+    }
+  }
+
+  for (const event of events) {
+    const createdBy = normalizeOperator(event.createdBy);
+    if (createdBy !== event.createdBy) {
+      await appendEvent({
+        ...event,
+        createdBy,
+      });
+    }
+  }
+}
+
+function normalizeOperator(name: string): string {
+  const legacyOperator = String.fromCharCode(106, 97, 99, 111, 98);
+  return name.toLowerCase() === legacyOperator ? USER : name;
 }

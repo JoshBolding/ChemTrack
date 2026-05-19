@@ -26,6 +26,8 @@ export default function AssignToUnit() {
       setTote(t ?? null);
       setUnits(us);
       setJobs(js);
+      setUnitId(us.find((u) => u.id === 'u3')?.id ?? us[0]?.id ?? '');
+      setJobId(t?.jobId ?? js.find((j) => j.id === 'j1')?.id ?? '');
     })();
   }, [id]);
 
@@ -36,7 +38,7 @@ export default function AssignToUnit() {
       tote,
       type: 'assigned_to_unit',
       payload: { unitId, jobId: jobId || null, note },
-      createdBy: 'jacob',
+      createdBy: 'operator',
       toteUpdates: {
         status: 'assigned_to_unit',
         location: { kind: 'unit', unitId },

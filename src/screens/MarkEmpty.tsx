@@ -25,7 +25,7 @@ export default function MarkEmpty() {
       tote,
       type: 'marked_empty',
       payload: { note },
-      createdBy: 'jacob',
+      createdBy: 'operator',
       toteUpdates: { status: 'empty', currentQtyGal: 0 },
       updatedLabel: 'Marked empty',
     });

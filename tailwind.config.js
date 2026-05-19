@@ -4,11 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Red Hawk–ish palette
+        // ChemTrack field-ops palette
         primary: {
           DEFAULT: '#b8202e',
           dark: '#8a1822',
           light: '#d94652',
+        },
+        action: {
+          DEFAULT: '#155da8',
+          dark: '#0f4d8f',
+          light: '#256fbf',
+        },
+        chrome: {
+          DEFAULT: '#0b0d12',
+          soft: '#151821',
         },
         ink: {
           DEFAULT: '#0f172a',
@@ -19,6 +28,11 @@ export default {
           DEFAULT: '#ffffff',
           alt: '#f8fafc',
           sunken: '#f1f5f9',
+        },
+        field: {
+          amber: '#f2b94b',
+          green: '#2f8f46',
+          orange: '#d97706',
         },
       },
       spacing: {

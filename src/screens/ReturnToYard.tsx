@@ -29,13 +29,13 @@ export default function ReturnToYard() {
     if (!tote) return;
     const qtyNum = Math.max(0, Math.min(TOTE_CAPACITY_GAL, Number(qty) || 0));
     setSaving(true);
-    let newStatus: ToteStatus =
+    const newStatus: ToteStatus =
       condition === 'damaged' ? 'hold' : qtyNum === 0 ? 'empty' : 'in_yard';
     await writeEvent({
       tote,
       type: 'returned_to_yard',
       payload: { qtyNum, condition, note },
-      createdBy: 'jacob',
+      createdBy: 'operator',
       toteUpdates: {
         status: newStatus,
         location: { kind: condition === 'damaged' ? 'hold' : 'yard' },

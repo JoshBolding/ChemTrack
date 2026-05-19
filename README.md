@@ -1,7 +1,7 @@
 # ChemTrack
 
 Mobile-first PWA for tracking 330-gallon chemical totes used by coiled tubing
-field operations. V1 POC built for Red Hawk.
+field operations. V1 POC built for scan-first tote control.
 
 The app is centered on scanning QR codes to act on individual totes. Totes
 move between the yard and a small fleet of units (mobile mini-warehouses),
@@ -63,8 +63,21 @@ npm run preview
 
 ## Deployment
 
-Pushes to `main` trigger `.github/workflows/deploy.yml` which builds and
-publishes to GitHub Pages. The deployed app lives at:
+The app is Vercel-safe at the site root. Vite now defaults `base` to `/`, so a
+normal Vercel build can use:
+
+```bash
+npm run build
+```
+
+If deploying the same build to GitHub Pages under `/ChemTrack/`, set:
+
+```bash
+VITE_BASE_PATH=/ChemTrack/
+```
+
+Pushes to `main` can still trigger `.github/workflows/deploy.yml` for GitHub
+Pages when that environment variable is supplied. The GitHub Pages URL is:
 
     https://joshbolding.github.io/ChemTrack/
 
@@ -89,6 +102,9 @@ Actions** the first time.)
 14. Jobs (list)
 15. Tote Search (fallback lookup)
 16. Tote Not Found (clear error state)
+17. Needs Attention (local exceptions)
+18. Supervisor Report (inventory snapshot, unit loadout, job usage)
+19. Add Note
 
 ## What's deferred
 
@@ -96,5 +112,4 @@ Actions** the first time.)
 - Unit / Job admin CRUD screens
 - Real server sync (the queue exists; there's just nothing on the other end)
 - Role-based permissions
-- Exception surfacing screen (rules exist in `src/types.ts` as codes)
 - Label printing

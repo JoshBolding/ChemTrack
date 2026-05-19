@@ -1,0 +1,15 @@
+artifacts/
+dist/
+node_modules/
+*.docx
+*.jpg
+*.jpeg
+*.png
+vite-*.log
+vite-dev-current.log
+AGENTS.md
+CHEMTRACK_*.md
+KIMTRACK_*.md
+Dockerfile
+Dockerfile.prod
+.dockerignore
